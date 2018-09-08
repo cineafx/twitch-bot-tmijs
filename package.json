@@ -1,0 +1,19 @@
+{
+  "name": "IceCreamDataBase-bot",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main.js",
+  "keywords": [
+    "twitchbot",
+    "twitch",
+    "chatbot",
+    "bot",
+    "twitch chatbot",
+    "twitch bot"
+  ],
+  "author": "cineafx <cineafx@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "tmi.js": "^1.2.1"
+  }
+}
