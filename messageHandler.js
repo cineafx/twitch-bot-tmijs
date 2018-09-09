@@ -5,6 +5,10 @@ module.exports = {
     var returnMessage = ""
     var returnType = "say"
 
+    if (messageLC.startsWith('<github')) {
+      returnMessage = "github.com/cineafx/twitch-bot-tmijs"
+    }
+
     if (messageLC.startsWith('<test')) {
       returnMessage = "TEST"
     }
@@ -18,6 +22,10 @@ module.exports = {
     }
 
     if (messageLC.startsWith('<uptime')) {
+      returnMessage = "Running for $(uptime)"
+    }
+
+    if (messageLC.startsWith('!pingall')) {
       returnMessage = "Running for $(uptime)"
     }
 

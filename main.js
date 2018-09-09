@@ -8,7 +8,7 @@ var pastMessages = [];
 var addSpecialCharacter = new Object();
 var lastMessageTime = 0;
 
-var client = new tmi.client(options)
+var client = new tmi.client(options.clientoptions)
 
 // Connect the client to the server..
 client.connect()
