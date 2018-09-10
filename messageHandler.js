@@ -8,25 +8,30 @@ module.exports = {
   }
 }
 
-function handle (channel, userstate, message, userLevel, botname) {
+function handle (channel, userstate, message, userLevel) {
 
-  var messageLC = message.toLowerCase()
   var returnMessage = ""
   var returnType = "say"
 
-  if (messageLC.startsWith('<ping')) {
+  var input = splitInput(message)
+
+  if (input.command === "<ping") {
     returnMessage = "pong"
   }
 
-  if (messageLC.startsWith('<uptime')) {
+  if (input.command === "<uptime") {
     returnMessage = "Running for $(uptime)"
   }
 
-  if (messageLC.startsWith('!pingall')) {
+  if (input.command === "!pingall") {
     returnMessage = "Running for $(uptime)"
   }
 
-  if (userLevel === 4 && messageLC.startsWith('<shutdown')) {
+  if (input.command === "<check") {
+    returnMessage = "Userlevel of " + userstate.username + ": " + userLevel
+  }
+
+  if (userLevel === 4 && input.command === "<shutdown") {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
   }
@@ -36,6 +41,18 @@ function handle (channel, userstate, message, userLevel, botname) {
   } else {
     return null
   }
+}
+
+function splitInput (input) {
+  var output = {}
+
+  var split = input.split(' ') || null
+
+  output.command = split[0].toLowerCase() || null
+  output.firstParameter = split[1] || null
+  output.allParameter = split.slice(1).join(" ") || null
+
+  return output
 }
 
 function pause (delay) {

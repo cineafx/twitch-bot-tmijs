@@ -1,22 +1,24 @@
 module.exports = {
-  checkAndReplace: function (data) {
-    var message = data.message
-    //var uptime = data.uptime
-
-    if (message.includes("$(uptime)")) {
-      var time = process.uptime()
-      var uptime = (time + "").toHHMMSS()
-      message = message.replace("$(uptime)", uptime)
-    }
-
-    return message
-  },
+  checkAndReplace: checkAndReplace,
   check: function () {
     //asdf
   },
   replace: function () {
     //asdf
   }
+}
+
+function checkAndReplace (data) {
+  var message = data.message
+  //var uptime = data.uptime
+
+  if (message.includes("$(uptime)")) {
+    var time = process.uptime()
+    var uptime = (time + "").toHHMMSS()
+    message = message.replace("$(uptime)", uptime)
+  }
+
+  return message
 }
 
 String.prototype.toHHMMSS = function () { // eslint-disable-line

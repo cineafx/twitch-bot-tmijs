@@ -15,20 +15,10 @@ client.connect()
 
 
 client.on("chat", function (channel, userstate, message, self) {
-    // Don't listen to my own messages..
+    // Don't listen to my own messages.. for now
     if (self) { return }
 
-
-    if (userstate.username === "icdb" && message.toLowerCase().startsWith("<shutdown")) {
-      sendMessage(channel, userstate.username, "Shutting down")
-
-      setTimeout(function () {
-        client.disconnect()
-        process.exit(0)
-      }, 2000)
-    }
-
-    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate), client.getUsername())
+    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
     if (returner !== null) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage
@@ -41,7 +31,7 @@ client.on("chat", function (channel, userstate, message, self) {
         setTimeout(function () {
           client.disconnect()
           process.exit(0)
-        }, 1500)
+        }, 1300)
       }
     }
 })
