@@ -8,7 +8,8 @@
   "mysqloptions": {
     "host": "example.com",
     "user": "exampleuser",
-    "password": "examplepassword"
+    "password": "examplepassword",
+    "database": "exampledatabase"
   },
   "clientoptions": {
     "options": {

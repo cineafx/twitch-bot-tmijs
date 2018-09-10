@@ -18,10 +18,6 @@ client.on("chat", function (channel, userstate, message, self) {
     // Don't listen to my own messages..
     if (self) { return }
 
-    if (message.toLowerCase().startsWith("<modcheck")) {
-      sendMessage(channel, userstate.username, '' + client.isMod(channel, client.getUsername()) )
-    }
-
 
     if (userstate.username === "icdb" && message.toLowerCase().startsWith("<shutdown")) {
       sendMessage(channel, userstate.username, "Shutting down")
@@ -32,7 +28,7 @@ client.on("chat", function (channel, userstate, message, self) {
       }, 2000)
     }
 
-    var returner = messageHandler.handle(userstate, message, client.getUsername())
+    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate), client.getUsername())
     if (returner !== null) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage
@@ -64,6 +60,21 @@ client.on("resub", function (channel, username, months, message, userstate, meth
 
 
 //functions
+
+
+function getUserLevel (channel, userstate) {
+  var userLevel = 0
+  if (options.clientoptions.admins.includes(userstate["user-id"])) {
+    userLevel = 4
+  } else if (channel === '#' + userstate.username) {
+    userLevel = 3
+  } else if (userstate.mod) {
+    userLevel = 2
+  } else if (userstate.subscriber) {
+    userLevel = 1
+  }
+  return userLevel
+}
 
 function cleanupGlobalTimeout () {
   while (pastMessages.length > 0 && pastMessages[0] + 30000 < new Date().getTime()) {
