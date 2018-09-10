@@ -9,12 +9,14 @@ var options = require('./config.json')
 var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
+var globalCommandObject = {}
+var localCommandObject = {}
 
 //Set default channel to only be the users channel
 options.clientoptions.channels = ["#" + options.clientoptions.identity.username]
 var client = new tmi.client(options.clientoptions)
 
-const connection = mysql.createConnection(options.mysqloptions)
+const mysqlConnection = mysql.createConnection(options.mysqloptions)
 
 // Connect the client to the server..
 client.connect()
@@ -23,6 +25,11 @@ client.on("join", function (channel, username, self) {
   if (self && channel === "#" + username) {
     updateChannels()
     setInterval(function () { updateChannels() }, 60000)
+
+
+    messageHandler.updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject)
+
+    setInterval(function () { messageHandler.updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject) }, 60000)
   }
 })
 
@@ -31,12 +38,12 @@ client.on("chat", function (channel, userstate, message, self) {
     // Don't listen to my own messages.. for now
     if (self) { return }
 
-    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
+    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate), mysqlConnection, globalCommandObject, localCommandObject)
     if (returner !== null) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage
 
-      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, uptime: process.uptime()})
+      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, uptime: process.uptime()})
 
       sendMessage(channel, userstate.username, returnMessage)
 
@@ -61,11 +68,17 @@ client.on("resub", function (channel, username, months, message, userstate, meth
   }
 })
 
+client.on("subgift", function (channel, username, recipient, method, message, userstate) {
+  if (channel === "#theonemanny") {
+    sendMessage(channel, username, username + " pupperDank Clap " + recipient)
+  }
+})
+
 
 //functions
 
 function updateChannels () {
-  connection.query(
+  mysqlConnection.query(
     'SELECT * FROM `channels`',
     function (err, results, fields) {
       var channelsFromDB = ["#" + client.getUsername()]
