@@ -36,7 +36,7 @@ client.on("join", function (channel, username, self) {
 
 client.on("chat", function (channel, userstate, message, self) {
     // Don't listen to my own messages.. for now
-    if (self) { return }
+    //if (self) { return }
 
     var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate), mysqlConnection, globalCommandObject, localCommandObject)
     if (returner !== null) {
