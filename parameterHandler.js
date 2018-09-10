@@ -10,16 +10,19 @@ module.exports = {
 
 function checkAndReplace (data) {
   var message = data.message
-  //var uptime = data.uptime
 
   if (message.includes("${user}")) {
-    message = message.replace("${user}", data.userstate.username)
+    message = message.replace(new RegExp("\\$\\{user\\}", 'g'), data.userstate.username)
+  }
+
+  if (message.includes("${channel}")) {
+    message = message.replace(new RegExp("\\$\\{channel\\}", 'g'), data.channel)
   }
 
   if (message.includes("${uptime}")) {
     var time = process.uptime()
     var uptime = (time + "").toHHMMSS()
-    message = message.replace("${uptime}", uptime)
+    message = message.replace(new RegExp("\\$\\{uptime\\}", 'g'), uptime)
   }
 
   return message
