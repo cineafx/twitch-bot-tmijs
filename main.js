@@ -65,24 +65,22 @@ client.on("resub", function (channel, username, months, message, userstate, meth
 //functions
 
 function updateChannels () {
-  console.log("updating channels")
   connection.query(
     'SELECT * FROM `channels`',
     function (err, results, fields) {
-      var channelsFromDB = []
+      var channelsFromDB = ["#" + client.getUsername()]
       results.forEach( function (element) {
         channelsFromDB.push("#" + element.channelName)
       })
-      var currentChannels = client.getChannels()
 
-      currentChannels.forEach( function (element) {
+      client.getChannels().forEach( function (element) {
         if (!channelsFromDB.includes(element)) {
           client.part(element)
         }
       })
 
       channelsFromDB.forEach( function (element) {
-        if (!currentChannels.includes(element)) {
+        if (!client.getChannels().includes(element)) {
           client.join(element)
         }
       })
@@ -119,7 +117,6 @@ function checkGlobalTimeout () {
     return true
   }
 }
-
 
 function sendMessage (channel, username, message) {
 
