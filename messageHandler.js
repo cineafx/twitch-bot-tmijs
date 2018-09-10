@@ -49,9 +49,9 @@ module.exports = {
   }
 }
 
-function pause(delay) {
-    var t0 = Date.now();
-    while((Date.now() - t0) < delay) {
-        (function() {}) ();
+function pause (delay) {
+    var t0 = Date.now()
+    while ((Date.now() - t0) < delay) {
+        (function () {})()
     }
 }

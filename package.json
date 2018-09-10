@@ -1,6 +1,7 @@
 {
   "name": "IceCreamDataBase-bot",
   "version": "0.0.1",
+  "private": true,
   "description": "",
   "main": "main.js",
   "keywords": [
@@ -12,8 +13,13 @@
     "twitch bot"
   ],
   "author": "cineafx <cineafx@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cineafx/twitch-bot-tmijs.git"
+  },
   "license": "ISC",
   "dependencies": {
+    "mysql2": "^1.6.1",
     "tmi.js": "^1.2.1"
   }
 }

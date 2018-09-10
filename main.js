@@ -4,9 +4,9 @@ const parameterHandler = require(__dirname + '/parameterHandler.js')
 
 var options = require('./config.json')
 
-var pastMessages = [];
-var addSpecialCharacter = new Object();
-var lastMessageTime = 0;
+var pastMessages = []
+var addSpecialCharacter = new Object()
+var lastMessageTime = 0
 
 var client = new tmi.client(options.clientoptions)
 
@@ -16,20 +16,20 @@ client.connect()
 
 client.on("chat", function (channel, userstate, message, self) {
     // Don't listen to my own messages..
-    if (self) return
+    if (self) { return }
 
     if (message.toLowerCase().startsWith("<modcheck")) {
-      sendMessage(channel, userstate.username,'' + client.isMod(channel, client.getUsername()) )
+      sendMessage(channel, userstate.username, '' + client.isMod(channel, client.getUsername()) )
     }
 
 
     if (userstate.username === "icdb" && message.toLowerCase().startsWith("<shutdown")) {
       sendMessage(channel, userstate.username, "Shutting down")
 
-      setTimeout(function(){
+      setTimeout(function () {
         client.disconnect()
         process.exit(0)
-      }, 2000);
+      }, 2000)
     }
 
     var returner = messageHandler.handle(userstate, message, client.getUsername())
@@ -37,15 +37,15 @@ client.on("chat", function (channel, userstate, message, self) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage
 
-      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, uptime: process.uptime()});
+      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, uptime: process.uptime()})
 
       sendMessage(channel, userstate.username, returnMessage)
 
       if (returnType === "shutdown") {
-        setTimeout(function(){
+        setTimeout(function () {
           client.disconnect()
           process.exit(0)
-        }, 1500);
+        }, 1500)
       }
     }
 })
@@ -54,13 +54,13 @@ client.on("subscription", function (channel, username, method, message, userstat
   if (channel === "#theonemanny") {
     sendMessage(channel, username, username + " pupperDank Clap")
   }
-});
+})
 
 client.on("resub", function (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
     sendMessage(channel, username, username + " pupperDank Clap")
   }
-});
+})
 
 
 //functions
@@ -73,11 +73,11 @@ function cleanupGlobalTimeout () {
 
 function checkGlobalTimeout () {
   if (pastMessages.length < 20) {
-    console.log(pastMessages.length + " message(s) in the past 30 seconds");
+    console.log(pastMessages.length + " message(s) in the past 30 seconds")
 
-    return false;
+    return false
   } else {
-    return true;
+    return true
   }
 }
 
@@ -86,7 +86,7 @@ function sendMessage (channel, username, message) {
 
   var delay = (client.getUsername() === username && !client.isMod(channel, client.getUsername())) ? 1250 : 0
 
-  setTimeout(function(){
+  setTimeout(function () {
 
     var currentTimeMillis = new Date().getTime()
 
@@ -114,5 +114,5 @@ function sendMessage (channel, username, message) {
       console.log("ratelimit: Too fast as pleb " + (currentTimeMillis - lastMessageTime) + "ms")
     }
 
-  }, delay);
+  }, delay)
 }
