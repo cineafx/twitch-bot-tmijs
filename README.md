@@ -22,7 +22,7 @@
         "username": "username",
         "password": "oauth:xxx"
     },
-    "channels": ["#username", "#channel2"]
+    "admins": ["12345678", "456789123"]
   }
 }
 ```

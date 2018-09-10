@@ -15,6 +15,10 @@ function handle (channel, userstate, message, userLevel) {
 
   var input = splitInput(message)
 
+  if (input.command === "<czech") {
+    returnMessage = "KKomrade thrashh5 KKomrade"
+  }
+
   if (input.command === "<ping") {
     returnMessage = "pong"
   }

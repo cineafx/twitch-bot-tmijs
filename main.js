@@ -1,4 +1,6 @@
 var tmi = require("tmi.js")
+const mysql = require('mysql2')
+
 const messageHandler = require(__dirname + '/messageHandler.js')
 const parameterHandler = require(__dirname + '/parameterHandler.js')
 
@@ -8,10 +10,21 @@ var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
 
+//Set default channel to only be the users channel
+options.clientoptions.channels = ["#" + options.clientoptions.identity.username]
 var client = new tmi.client(options.clientoptions)
+
+const connection = mysql.createConnection(options.mysqloptions)
 
 // Connect the client to the server..
 client.connect()
+
+client.on("join", function (channel, username, self) {
+  if (self && channel === "#" + username) {
+    updateChannels()
+    setInterval(function () { updateChannels() }, 60000)
+  }
+})
 
 
 client.on("chat", function (channel, userstate, message, self) {
@@ -51,6 +64,31 @@ client.on("resub", function (channel, username, months, message, userstate, meth
 
 //functions
 
+function updateChannels () {
+  console.log("updating channels")
+  connection.query(
+    'SELECT * FROM `channels`',
+    function (err, results, fields) {
+      var channelsFromDB = []
+      results.forEach( function (element) {
+        channelsFromDB.push("#" + element.channelName)
+      })
+      var currentChannels = client.getChannels()
+
+      currentChannels.forEach( function (element) {
+        if (!channelsFromDB.includes(element)) {
+          client.part(element)
+        }
+      })
+
+      channelsFromDB.forEach( function (element) {
+        if (!currentChannels.includes(element)) {
+          client.join(element)
+        }
+      })
+    }
+  )
+}
 
 function getUserLevel (channel, userstate) {
   var userLevel = 0
