@@ -9,14 +9,14 @@ var options = require('./config.json')
 var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
-var globalCommandObject = {}
-var localCommandObject = {}
+global.globalCommandObject = {}
+global.localCommandObject = {}
 
 //Set default channel to only be the users channel
 options.clientoptions.channels = ["#" + options.clientoptions.identity.username]
 var client = new tmi.client(options.clientoptions)
 
-const mysqlConnection = mysql.createConnection(options.mysqloptions)
+global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 
 // Connect the client to the server..
 client.connect()
@@ -27,9 +27,9 @@ client.on("join", function (channel, username, self) {
     setInterval(function () { updateChannels() }, 60000)
 
 
-    messageHandler.updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject)
+    messageHandler.updateCommandObjects()
 
-    setInterval(function () { messageHandler.updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject) }, 60000)
+    setInterval(function () { messageHandler.updateCommandObjects() }, 60000)
   }
 })
 
@@ -38,7 +38,7 @@ client.on("chat", function (channel, userstate, message, self) {
     // Don't listen to my own messages.. for now
     //if (self) { return }
 
-    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate), mysqlConnection, globalCommandObject, localCommandObject)
+    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
     if (returner !== null) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage

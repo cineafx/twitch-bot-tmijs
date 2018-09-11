@@ -3,20 +3,20 @@ module.exports = {
   updateCommandObjects: updateCommandObjects
 }
 
-function handle (channel, userstate, message, userLevel, mysqlConnection, globalCommandObject, localCommandObject) {
+function handle (channel, userstate, message, userLevel) {
 
   var returnMessage = ""
   var returnType = "say"
 
   var input = splitInput(message)
 
-  var command = getCommand(input, channel, globalCommandObject, localCommandObject)
+  var command = getCommand(input, channel)
 
   if (command) {
     if (userLevel >= command.userLevel) {
       returnMessage = command.response
-      increaseTimesUsed(mysqlConnection, command)
-      updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject)
+      increaseTimesUsed(command)
+      updateCommandObjects()
     }
   }
 
@@ -32,7 +32,7 @@ function handle (channel, userstate, message, userLevel, mysqlConnection, global
   }
 }
 
-function increaseTimesUsed (mysqlConnection, command) {
+function increaseTimesUsed (command) {
   var sqlStr = ''
   if (command.hasOwnProperty('channel')) {
     sqlStr = 'UPDATE `localCommands` set timesUsed = timesUsed + 1 WHERE ID = ?'
@@ -46,7 +46,7 @@ function increaseTimesUsed (mysqlConnection, command) {
   command.timesUsed++
 }
 
-function updateCommandObjects (mysqlConnection, globalCommandObject, localCommandObject) {
+function updateCommandObjects () {
   for (let member in globalCommandObject) { delete globalCommandObject[member] }
   for (let member in localCommandObject) { delete localCommandObject[member] }
   mysqlConnection.query(
@@ -67,11 +67,11 @@ function updateCommandObjects (mysqlConnection, globalCommandObject, localComman
   )
 }
 
-function containsGlobalCommand (input, channel, globalCommandObject) {
+function containsGlobalCommand (input, channel) {
   return globalCommandObject.hasOwnProperty(input.command)
 }
 
-function containsLocalCommand (input, channel, localCommandObject) {
+function containsLocalCommand (input, channel) {
   var contains = false
   if (localCommandObject.hasOwnProperty(input.command)) {
     if ("#" + localCommandObject[input.command].channelName === channel) {
@@ -81,7 +81,7 @@ function containsLocalCommand (input, channel, localCommandObject) {
   return contains
 }
 
-function getCommand (input, channel, globalCommandObject, localCommandObject) {
+function getCommand (input, channel) {
   var returnObj = false
 
   if (containsLocalCommand(input, channel, localCommandObject)) {
