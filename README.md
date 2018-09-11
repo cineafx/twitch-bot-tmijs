@@ -12,17 +12,33 @@
     "database": "exampledatabase"
   },
   "clientoptions": {
-    "options": {
-        "debug": true
+    "admins": ["12345678", "456789123"],
+    "dedicated": {
+      "enabled": true,
+      "options": {
+          "debug": false
+      },
+      "connection": {
+          "reconnect": true
+      },
+      "identity": {
+          "username": "username",
+          "password": "oauth:xxx"
+      }
     },
-    "connection": {
-        "reconnect": true
-    },
-    "identity": {
-        "username": "username",
-        "password": "oauth:xxx"
-    },
-    "admins": ["12345678", "456789123"]
+    "self": {
+      "enabled": true,
+      "options": {
+          "debug": false
+      },
+      "connection": {
+          "reconnect": true
+      },
+      "identity": {
+          "username": "username",
+          "password": "oauth:xxx"
+      }    
+    }
   }
 }
 ```
@@ -60,6 +76,19 @@ case "USERNOTICE":
       userstate['message-type'] = 'subgift';
     }
      this.emit("subgift", channel, username, recipient, {plan, planName}, userstate);
+  }
+
+  else if (msgid == 'giftpaidupgrade') {
+      var username = message.tags["display-name"] || message.tags["login"];
+      var sender = message.tags["msg-param-sender-name"] || message.tags["msg-param-sender-user-name"];
+      var promoName = message.tags["msg-param-promo-name"];
+      var giftTotal = message.tags["msg-param-promo-gift-total"];
+
+      var userstate = message.tags;
+       if (userstate) {
+          userstate['message-type'] = 'giftpaidupgrade';
+      }
+       this.emit("giftpaidupgrade", channel, username, sender, {giftTotal, promoName}, userstate);
   }
 ```
 ```js

@@ -13,8 +13,13 @@ global.globalCommandObject = {}
 global.localCommandObject = {}
 
 //Set default channel to only be the users channel
-options.clientoptions.channels = ["#" + options.clientoptions.identity.username]
-var client = new tmi.client(options.clientoptions)
+options.clientoptions.dedicated.channels = ["#" + options.clientoptions.dedicated.identity.username]
+options.clientoptions.self.channels = ["#" + options.clientoptions.self.identity.username]
+
+var client = new tmi.client(options.clientoptions.dedicated)
+//TODO: find a way to apply the client.on to both tmi clients
+//TODO: make sure global timeout applies to both at the same time!!
+//TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
 
 global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 
@@ -72,6 +77,29 @@ client.on("subgift", function (channel, username, recipient, method, message, us
   if (channel === "#theonemanny") {
     sendMessage(channel, username, username + " pupperDank Clap " + recipient)
   }
+})
+
+client.on("giftpaidupgrade", function (channel, username, sender, promo, userstate) {
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log(channel + ": " + username + " pupperDank Clap " + sender);
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  if (channel === "#theonemanny") {
+    sendMessage(channel, username, username + " pupperDank Clap " + sender)
+  }
+})
+
+client.on("else", function (message) {
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log(JSON.stringify(message))
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
 })
 
 
