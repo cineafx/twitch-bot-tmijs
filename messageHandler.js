@@ -14,33 +14,10 @@ function handle (channel, userstate, message, userLevel, mysqlConnection, global
 
   if (command) {
     if (userLevel >= command.userLevel) {
-
+      returnMessage = command.response
     }
-    returnMessage = command.response
   }
 
-  /*
-  if (input.command === "<czech" && userstate.username === "thrashh5") {
-    returnMessage = "KKomrade thrashh5 KKomrade"
-  }
-
-  if (input.command === "<ping") {
-    returnMessage = "pong"
-  }
-
-  if (input.command === "<uptime") {
-    returnMessage = "Running for $(uptime)"
-  }
-
-  if (input.command === "!pingall") {
-    returnMessage = "Running for $(uptime)"
-  }
-
-  if (input.command === "<check") {
-    returnMessage = "Userlevel of " + userstate.username + ": " + userLevel
-  }
-
-  */
   if (userLevel === 4 && input.command === "<shutdown") {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
@@ -56,8 +33,8 @@ function handle (channel, userstate, message, userLevel, mysqlConnection, global
 function updateCommandObjects (mysqlConnection, globalCommandObject, localCommandObject) {
   //globalCommandObject = {}
   //localCommandObject = {}
-  for (var member in globalCommandObject) delete globalCommandObject[member];
-  for (var member in localCommandObject) delete localCommandObject[member];
+  for (let member in globalCommandObject) { delete globalCommandObject[member] }
+  for (let member in localCommandObject) { delete localCommandObject[member] }
   mysqlConnection.query(
     'SELECT * FROM `globalCommands`',
     function (err, results, fields) {
@@ -95,11 +72,11 @@ function containsLocalCommand (input, channel, localCommandObject) {
 function getCommand (input, channel, globalCommandObject, localCommandObject) {
   var returnObj = false
 
-  if (containsLocalCommand (input, channel, localCommandObject)) {
+  if (containsLocalCommand(input, channel, localCommandObject)) {
     if ("#" + localCommandObject[input.command].channelName === channel) {
       returnObj = localCommandObject[input.command]
     }
-  } else if (containsGlobalCommand (input, channel, globalCommandObject)) {
+  } else if (containsGlobalCommand(input, channel, globalCommandObject)) {
     returnObj = globalCommandObject[input.command]
   }
   return returnObj
