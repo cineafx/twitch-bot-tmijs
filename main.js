@@ -18,6 +18,7 @@ options.clientoptions.self.channels = ["#" + options.clientoptions.self.identity
 
 var client = new tmi.client(options.clientoptions.dedicated)
 //TODO: find a way to apply the client.on to both tmi clients
+//TODO: make it a not anonymous function 
 //TODO: make sure global timeout applies to both at the same time!!
 //TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
 
