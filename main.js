@@ -43,7 +43,7 @@ client.on("chat", function (channel, userstate, message, self) {
       var returnType = returner.returnType
       var returnMessage = returner.returnMessage
 
-      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime()})
+      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
 
       sendMessage(channel, userstate.username, returnMessage)
 

@@ -25,6 +25,10 @@ function checkAndReplace (data) {
     message = message.replace(new RegExp("\\$\\{uptime\\}", 'g'), uptime)
   }
 
+  if (message.includes("${timesUsed}")) {
+    message = message.replace(new RegExp("\\$\\{timesUsed\\}", 'g'), data.command.timesUsed)
+  }
+
   return message
 }
 

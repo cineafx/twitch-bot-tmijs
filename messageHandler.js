@@ -15,6 +15,8 @@ function handle (channel, userstate, message, userLevel, mysqlConnection, global
   if (command) {
     if (userLevel >= command.userLevel) {
       returnMessage = command.response
+      increaseTimesUsed(mysqlConnection, command)
+      updateCommandObjects(mysqlConnection, globalCommandObject, localCommandObject)
     }
   }
 
@@ -24,15 +26,27 @@ function handle (channel, userstate, message, userLevel, mysqlConnection, global
   }
 
   if ( returnMessage.length !== 0 ) {
-    return {returnType: returnType, returnMessage: returnMessage}
+    return {returnType: returnType, returnMessage: returnMessage, command: command}
   } else {
     return null
   }
 }
 
+function increaseTimesUsed (mysqlConnection, command) {
+  var sqlStr = ''
+  if (command.hasOwnProperty('channel')) {
+    sqlStr = 'UPDATE `localCommands` set timesUsed = timesUsed + 1 WHERE ID = ?'
+  } else {
+    sqlStr = 'UPDATE `globalCommands` set timesUsed = timesUsed + 1 WHERE ID = ?'
+  }
+  mysqlConnection.execute(
+    sqlStr,
+    [command.ID]
+  )
+  command.timesUsed++
+}
+
 function updateCommandObjects (mysqlConnection, globalCommandObject, localCommandObject) {
-  //globalCommandObject = {}
-  //localCommandObject = {}
   for (let member in globalCommandObject) { delete globalCommandObject[member] }
   for (let member in localCommandObject) { delete localCommandObject[member] }
   mysqlConnection.query(
@@ -44,7 +58,7 @@ function updateCommandObjects (mysqlConnection, globalCommandObject, localComman
     }
   )
   mysqlConnection.query(
-    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userlevel`, `localCommands`.`timeout`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` RIGHT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
+    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userLevel`, `localCommands`.`timeout`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` RIGHT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
     function (err, results, fields) {
       results.forEach( function (element) {
         localCommandObject[element.command] = element
@@ -54,12 +68,10 @@ function updateCommandObjects (mysqlConnection, globalCommandObject, localComman
 }
 
 function containsGlobalCommand (input, channel, globalCommandObject) {
-
   return globalCommandObject.hasOwnProperty(input.command)
 }
 
 function containsLocalCommand (input, channel, localCommandObject) {
-
   var contains = false
   if (localCommandObject.hasOwnProperty(input.command)) {
     if ("#" + localCommandObject[input.command].channelName === channel) {
@@ -84,7 +96,6 @@ function getCommand (input, channel, globalCommandObject, localCommandObject) {
 
 function splitInput (input) {
   var output = {}
-
   var split = input.split(' ') || null
 
   output.command = split[0].toLowerCase() || null
