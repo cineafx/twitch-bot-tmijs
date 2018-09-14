@@ -142,9 +142,9 @@ function onElse (message) {
 function updateChannels () {
   [clientDedicated, clientSelf].forEach( function (clientElement) {
     if (clientElement.getOptions().enabled) {
-      var sql = "SELECT * FROM IceCreamDataBase.channels where self = b'1'"
+      var sql = "SELECT * FROM channels where self = b'1'"
       if (clientElement === clientDedicated) {
-        sql = "SELECT * FROM IceCreamDataBase.channels where dedicated = b'1'"
+        sql = "SELECT * FROM channels where dedicated = b'1'"
       }
 
       mysqlConnection.query(
@@ -212,7 +212,7 @@ function sendMessage (client, channel, username, message) {
     var currentTimeMillis = new Date().getTime()
 
     //more than 1250ms since last message
-    if (lastMessageTime + 1250 < currentTimeMillis || client.isMod(channel, client.getUsername())) {
+    if (lastMessageTime + 1225 < currentTimeMillis || client.isMod(channel, client.getUsername())) {
       lastMessageTime = currentTimeMillis
 
       //anti global ban

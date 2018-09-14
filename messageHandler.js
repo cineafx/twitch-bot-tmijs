@@ -7,19 +7,33 @@ function handle (channel, userstate, message, userLevel) {
 
   var returnMessage = ""
   var returnType = "say"
-
   var input = splitInput(message)
-
   var command = getCommand(input, channel)
-
   if (command) {
     if (userLevel >= command.userLevel) {
       returnMessage = command.response
       increaseTimesUsed(command)
-      updateCommandObjects()
+      setTimeout(function () { updateCommandObjects() }, 500 )
     }
   }
 
+  /* eval */
+  if (userLevel === 4 && input.command === "<eval") {
+    try {
+    returnMessage = eval(input.allParameter).toString()
+    } catch (err) {
+      returnMessage = err.message
+    }
+
+    ["mysql", "identity", "oauth", "host", "password"].forEach( function (element) {
+      if (returnMessage.toLowerCase().includes(element)
+          || input.allParameter.toLowerCase().includes(element)) {
+        returnMessage = "***"
+      }
+    })
+  }
+
+  /* shutdown */
   if (userLevel === 4 && ["<shutdown", "<sh", "<sd"].includes(input.command)) {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
