@@ -16,7 +16,9 @@ global.localCommandObject = {}
 options.clientoptions.dedicated.channels = ["#" + options.clientoptions.dedicated.identity.username]
 options.clientoptions.self.channels = ["#" + options.clientoptions.self.identity.username]
 
-var client = new tmi.client(options.clientoptions.dedicated)
+var clientDedicated = new tmi.client(options.clientoptions.dedicated)
+var clientSelf = new tmi.client(options.clientoptions.self)
+
 //TODO: find a way to apply the client.on to both tmi clients
 //TODO: make it a not anonymous function
 //TODO: make sure global timeout applies to both at the same time!!
@@ -24,16 +26,30 @@ var client = new tmi.client(options.clientoptions.dedicated)
 
 global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 
-// Connect the client to the server..
-client.connect()
+// Connect the clients to the server..
 
-client.on("join", onJoin )
-client.on("chat", onChat)
-client.on("subscription", onSubscription)
-client.on("resub", onResub )
-client.on("subgift", onSubgift)
-client.on("giftpaidupgrade", onGiftpaidupgrade)
-client.on("else", onElse)
+if (options.clientoptions.dedicated.enabled) {
+  clientDedicated.connect()
+
+  clientDedicated.on("join", onJoin )
+  clientDedicated.on("chat", onChat)
+  clientDedicated.on("subscription", onSubscription)
+  clientDedicated.on("resub", onResub )
+  clientDedicated.on("subgift", onSubgift)
+  clientDedicated.on("giftpaidupgrade", onGiftpaidupgrade)
+  clientDedicated.on("else", onElse)
+}
+if (options.clientoptions.self.enabled) {
+  clientSelf.connect()
+
+  clientSelf.on("join", onJoin )
+  clientSelf.on("chat", onChat)
+  clientSelf.on("subscription", onSubscription)
+  clientSelf.on("resub", onResub )
+  clientSelf.on("subgift", onSubgift)
+  clientSelf.on("giftpaidupgrade", onGiftpaidupgrade)
+  clientSelf.on("else", onElse)
+}
 
 /* -------------------------------------------------- */
 /* -------------------------------------------------- */
@@ -43,9 +59,15 @@ client.on("else", onElse)
 
 function onJoin (channel, username, self) {
   if (self && channel === "#" + username) {
-    updateChannels()
-    setInterval(function () { updateChannels() }, 60000)
 
+    //This is to prevent "UnhandledPromiseRejectionWarning: No response from Twitch." if you are doing stuff too fast
+    if (this === clientDedicated) {
+    setTimeout(function () { updateChannels() }, 1000)
+    } else {
+      setTimeout(function () { updateChannels() }, 2000)
+    }
+
+    setInterval(function () { updateChannels() }, 60000)
 
     messageHandler.updateCommandObjects()
     setInterval(function () { messageHandler.updateCommandObjects() }, 60000)
@@ -63,11 +85,12 @@ function onChat (channel, userstate, message, self) {
 
     returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
 
-    sendMessage(channel, userstate.username, returnMessage)
+    sendMessage(this, channel, userstate.username, returnMessage)
 
     if (returnType === "shutdown") {
       setTimeout(function () {
-        client.disconnect()
+        clientDedicated.disconnect()
+        clientSelf.disconnect()
         process.exit(0)
       }, 1300)
     }
@@ -76,25 +99,25 @@ function onChat (channel, userstate, message, self) {
 
 function onSubscription (channel, username, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperDank Clap")
+    sendMessage(this, channel, username, username + " pupperDank Clap")
   }
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " " + months + " years pupperF Clap")
+    sendMessage(this, channel, username, username + " " + months + " years pupperF Clap")
   }
 }
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperK pupperL " + recipient)
+    sendMessage(this, channel, username, username + " pupperK pupperL " + recipient)
   }
 }
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
+    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
   }
 }
 
@@ -117,27 +140,37 @@ function onElse (message) {
 /* -------------------------------------------------- */
 
 function updateChannels () {
-  mysqlConnection.query(
-    'SELECT * FROM `channels`',
-    function (err, results, fields) {
-      var channelsFromDB = ["#" + client.getUsername()]
-      results.forEach( function (element) {
-        channelsFromDB.push("#" + element.channelName)
-      })
+  [clientDedicated, clientSelf].forEach( function (clientElement) {
+    if (clientElement.getOptions().enabled) {
+      var sql = "SELECT * FROM IceCreamDataBase.channels where self = b'1'"
+      if (clientElement === clientDedicated) {
+        sql = "SELECT * FROM IceCreamDataBase.channels where dedicated = b'1'"
+      }
 
-      client.getChannels().forEach( function (element) {
-        if (!channelsFromDB.includes(element)) {
-          client.part(element)
-        }
-      })
+      mysqlConnection.query(
+        sql,
+        function (err, results, fields) {
+          var channelsFromDB = ["#" + clientElement.getUsername()]
+          results.forEach( function (element) {
+            channelsFromDB.push("#" + element.channelName)
+          })
 
-      channelsFromDB.forEach( function (element) {
-        if (!client.getChannels().includes(element)) {
-          client.join(element)
+          clientElement.getChannels().forEach( function (element) {
+            if (!channelsFromDB.includes(element)) {
+              clientElement.part(element)
+            }
+          })
+
+          channelsFromDB.forEach( function (element) {
+            if (!clientElement.getChannels().includes(element)) {
+              clientElement.join(element)
+            }
+          })
         }
-      })
+      )
+
     }
-  )
+  })
 }
 
 function getUserLevel (channel, userstate) {
@@ -170,7 +203,7 @@ function checkGlobalTimeout () {
   }
 }
 
-function sendMessage (channel, username, message) {
+function sendMessage (client, channel, username, message) {
 
   var delay = (client.getUsername() === username && !client.isMod(channel, client.getUsername())) ? 1250 : 0
 
