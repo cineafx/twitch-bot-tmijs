@@ -20,7 +20,7 @@ function handle (channel, userstate, message, userLevel) {
     }
   }
 
-  if (userLevel === 4 && input.command === "<shutdown") {
+  if (userLevel === 4 && ["<shutdown", "<sh", "<sd"].includes(input.command)) {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
   }

@@ -18,7 +18,7 @@ options.clientoptions.self.channels = ["#" + options.clientoptions.self.identity
 
 var client = new tmi.client(options.clientoptions.dedicated)
 //TODO: find a way to apply the client.on to both tmi clients
-//TODO: make it a not anonymous function 
+//TODO: make it a not anonymous function
 //TODO: make sure global timeout applies to both at the same time!!
 //TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
 
@@ -27,71 +27,78 @@ global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 // Connect the client to the server..
 client.connect()
 
-client.on("join", function (channel, username, self) {
+client.on("join", onJoin )
+client.on("chat", onChat)
+client.on("subscription", onSubscription)
+client.on("resub", onResub )
+client.on("subgift", onSubgift)
+client.on("giftpaidupgrade", onGiftpaidupgrade)
+client.on("else", onElse)
+
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* ------------------ ON FUNCTIONS ------------------ */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+
+function onJoin (channel, username, self) {
   if (self && channel === "#" + username) {
     updateChannels()
     setInterval(function () { updateChannels() }, 60000)
 
 
     messageHandler.updateCommandObjects()
-
     setInterval(function () { messageHandler.updateCommandObjects() }, 60000)
   }
-})
+}
 
+function onChat (channel, userstate, message, self) {
+  // Don't listen to my own messages.. for now
+  //if (self) { return }
 
-client.on("chat", function (channel, userstate, message, self) {
-    // Don't listen to my own messages.. for now
-    //if (self) { return }
+  var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
+  if (returner !== null) {
+    var returnType = returner.returnType
+    var returnMessage = returner.returnMessage
 
-    var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
-    if (returner !== null) {
-      var returnType = returner.returnType
-      var returnMessage = returner.returnMessage
+    returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
 
-      returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
+    sendMessage(channel, userstate.username, returnMessage)
 
-      sendMessage(channel, userstate.username, returnMessage)
-
-      if (returnType === "shutdown") {
-        setTimeout(function () {
-          client.disconnect()
-          process.exit(0)
-        }, 1300)
-      }
+    if (returnType === "shutdown") {
+      setTimeout(function () {
+        client.disconnect()
+        process.exit(0)
+      }, 1300)
     }
-})
+  }
+}
 
-client.on("subscription", function (channel, username, method, message, userstate) {
+function onSubscription (channel, username, method, message, userstate) {
   if (channel === "#theonemanny") {
     sendMessage(channel, username, username + " pupperDank Clap")
   }
-})
+}
 
-client.on("resub", function (channel, username, months, message, userstate, methods) {
+function onResub (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperDank Clap")
+    sendMessage(channel, username, username + " " + months + " years pupperF Clap")
   }
-})
+}
 
-client.on("subgift", function (channel, username, recipient, method, message, userstate) {
+function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperDank Clap " + recipient)
+    sendMessage(channel, username, username + " pupperK pupperL " + recipient)
   }
-})
+}
 
-client.on("giftpaidupgrade", function (channel, username, sender, promo, userstate) {
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log(channel + ": " + username + " pupperDank Clap " + sender);
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
+function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(channel, username, username + " pupperDank Clap " + sender)
+    sendMessage(channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
   }
-})
+}
 
-client.on("else", function (message) {
+function onElse (message) {
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
@@ -101,10 +108,13 @@ client.on("else", function (message) {
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
-})
+}
 
-
-//functions
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* ---------------- OTHER FUNCTIONS ----------------- */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
 
 function updateChannels () {
   mysqlConnection.query(
