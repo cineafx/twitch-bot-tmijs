@@ -9,6 +9,7 @@ var options = require('./config.json')
 var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
+var previousLogMessage = ""
 global.globalCommandObject = {}
 global.localCommandObject = {}
 
@@ -78,6 +79,8 @@ function onChat (channel, userstate, message, self) {
   // Don't listen to my own messages.. for now
   //if (self) { return }
 
+  log(this, timeStamp() + " " + channel + " " + userstate.username + ": " + message)
+
   var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
   if (returner !== null) {
     var returnType = returner.returnType
@@ -105,7 +108,10 @@ function onSubscription (channel, username, method, message, userstate) {
 
 function onResub (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " " + months + " years pupperF Clap")
+    let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
+    let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
+
+    sendMessage(this, channel, username, username + " " + months + " " + timeunit + " pupperF Clap")
   }
 }
 
@@ -158,12 +164,14 @@ function updateChannels () {
           clientElement.getChannels().forEach( function (element) {
             if (!channelsFromDB.includes(element)) {
               clientElement.part(element)
+              console.log(timeStamp() + "LEAVING: " + element)
             }
           })
 
           channelsFromDB.forEach( function (element) {
             if (!clientElement.getChannels().includes(element)) {
               clientElement.join(element)
+              console.log(timeStamp() + "JOINING: " + element)
             }
           })
         }
@@ -236,4 +244,16 @@ function sendMessage (client, channel, username, message) {
     }
 
   }, delay)
+}
+
+function timeStamp () {
+  var datetime = new Date().toISOString()
+  return "[" + datetime.slice(0,10) + " " + datetime.slice(-13, -5) + "]"
+}
+
+function log (client, message) {
+  if (previousLogMessage !== message) {
+    console.log(message)
+    previousLogMessage = message
+  }
 }

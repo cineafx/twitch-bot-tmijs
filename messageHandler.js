@@ -67,14 +67,16 @@ function updateCommandObjects () {
     'SELECT * FROM `globalCommands`',
     function (err, results, fields) {
       results.forEach( function (element) {
+        element.command = element.command.trim().toLowerCase()
         globalCommandObject[element.command] = element
       })
     }
   )
   mysqlConnection.query(
-    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userLevel`, `localCommands`.`timeout`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` RIGHT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
+    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userLevel`, `localCommands`.`timeout`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` LEFT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
     function (err, results, fields) {
       results.forEach( function (element) {
+        element.command = element.command.trim().toLowerCase()
         localCommandObject[element.command] = element
       })
     }
