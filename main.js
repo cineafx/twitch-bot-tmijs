@@ -78,8 +78,7 @@ function onJoin (channel, username, self) {
 function onChat (channel, userstate, message, self) {
   // Don't listen to my own messages.. for now
   //if (self) { return }
-
-  log(this, timeStamp() + " " + channel + " " + userstate.username + ": " + message)
+  log(this, channel + " " + userstate.username + ": " + message)
 
   var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
   if (returner !== null) {
@@ -102,28 +101,58 @@ function onChat (channel, userstate, message, self) {
 
 function onSubscription (channel, username, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " pupperDank Clap")
+    if (this === clientDedicated) {
+      sendMessage(this, channel, username, username + " pupperDank Clap")
+    } else {
+      let client = this
+      setTimeout(function () {
+        sendMessage(client, channel, username, "pupperB forsen1 forsen2")
+        sendMessage(client, channel, username, "pupperK forsen3 forsen4")
+      }, 100)
+    }
   }
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
-    let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
-    let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
+    if (this === clientDedicated) {
+      let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
+      let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
-    sendMessage(this, channel, username, username + " " + months + " " + timeunit + " pupperF Clap")
+      sendMessage(this, channel, username, username + " " + months + " " + timeunit + " pupperF Clap")
+    } else {
+      let client = this
+      setTimeout(function () {
+        sendMessage(client, channel, username, "nan1 nan2")
+        sendMessage(client, channel, username, "nan3 nan4 GuitarTime")
+      }, 100)
+    }
   }
 }
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " pupperK pupperL " + recipient)
+    if (this === clientDedicated) {
+      sendMessage(this, channel, username, username + " pupperK pupperL " + recipient)
+    } else {
+      let client = this
+      setTimeout(function () {
+        sendMessage(client, channel, username, username + "nymnGun cadyK forsenGun")
+      }, 100)
+    }
   }
 }
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
+    if (this === clientDedicated) {
+      sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
+    } else {
+      let client = this
+      setTimeout(function () {
+        sendMessage(client, channel, username, "callum12Pag Clap " + username)
+      }, 100)
+    }
   }
 }
 
@@ -164,14 +193,14 @@ function updateChannels () {
           clientElement.getChannels().forEach( function (element) {
             if (!channelsFromDB.includes(element)) {
               clientElement.part(element)
-              console.log(timeStamp() + "LEAVING: " + element)
+              console.log(timeStamp() + " LEAVING: " + element)
             }
           })
 
           channelsFromDB.forEach( function (element) {
             if (!clientElement.getChannels().includes(element)) {
               clientElement.join(element)
-              console.log(timeStamp() + "JOINING: " + element)
+              console.log(timeStamp() + " JOINING: " + element)
             }
           })
         }
@@ -236,11 +265,11 @@ function sendMessage (client, channel, username, message) {
         client.say(channel, message)
 
       } else {
-        console.log("ratelimit: 20 messages in past " + (currentTimeMillis - pastMessages[0]) + "ms")
+        console.log(timeStamp() + " ratelimit: 20 messages in past " + (currentTimeMillis - pastMessages[0]) + "ms")
       }
 
     } else {
-      console.log("ratelimit: Too fast as pleb " + (currentTimeMillis - lastMessageTime) + "ms")
+      console.log(timeStamp() + " ratelimit: Too fast as pleb " + (currentTimeMillis - lastMessageTime) + "ms")
     }
 
   }, delay)
@@ -253,7 +282,7 @@ function timeStamp () {
 
 function log (client, message) {
   if (previousLogMessage !== message) {
-    console.log(message)
+    console.log(timeStamp() + " " + message)
     previousLogMessage = message
   }
 }
