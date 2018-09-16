@@ -108,58 +108,30 @@ function onChat (channel, userstate, message, self) {
 
 function onSubscription (channel, username, method, message, userstate) {
   if (channel === "#theonemanny") {
-    if (this === clientDedicated) {
-      sendMessage(this, channel, username, username + " pupperDank Clap")
-    } else {
-      let client = this
-      setTimeout(function () {
-        sendMessage(client, channel, username, "pupperB forsen1 forsen2")
-        sendMessage(client, channel, username, "pupperK forsen3 forsen4")
-      }, 200)
-    }
+    sendMessage(this, channel, username, "forsen1 forsen2 " + username)
+    sendMessage(this, channel, username, "forsen3 forsen4 Clap")
   }
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
   if (channel === "#theonemanny") {
-    if (this === clientDedicated) {
-      let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
-      let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
+    let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
+    let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
-      sendMessage(this, channel, username, username + " " + months + " " + timeunit + " pupperF Clap")
-    } else {
-      let client = this
-      setTimeout(function () {
-        sendMessage(client, channel, username, "nan1 nan2")
-        sendMessage(client, channel, username, "nan3 nan4 GuitarTime")
-      }, 200)
-    }
+    sendMessage(this, channel, username, "nan1 nan2 " + username + " resubbed for " + months + " " + timeunit)
+    sendMessage(this, channel, username, "nan3 nan4 GuitarTime")
   }
 }
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    if (this === clientDedicated) {
-      sendMessage(this, channel, username, username + " pupperK pupperL " + recipient)
-    } else {
-      let client = this
-      setTimeout(function () {
-        sendMessage(client, channel, username, username + "nymnGun cadyK forsenGun")
-      }, 200)
-    }
+    sendMessage(this, channel, username, username + " nymnGun cadyK forsenGun " + recipient)
   }
 }
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (channel === "#theonemanny") {
-    if (this === clientDedicated) {
-      sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
-    } else {
-      let client = this
-      setTimeout(function () {
-        sendMessage(client, channel, username, "callum12Pag Clap " + username)
-      }, 200)
-    }
+    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
   }
 }
 
