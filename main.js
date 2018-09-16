@@ -65,7 +65,7 @@ function onJoin (channel, username, self) {
     if (this === clientDedicated) {
     setTimeout(function () { updateChannels() }, 1000)
     } else {
-      setTimeout(function () { updateChannels() }, 2000)
+      setTimeout(function () { updateChannels() }, 0)
     }
 
     setInterval(function () { updateChannels() }, 60000)
@@ -86,8 +86,15 @@ function onChat (channel, userstate, message, self) {
     var returnMessage = returner.returnMessage
 
     returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
-
-    sendMessage(this, channel, userstate.username, returnMessage)
+    if (returnMessage.includes('{nl}')) {
+      let client = this
+      returnMessage.split('{nl}').forEach( function (returnMessageElement) {
+        returnMessageElement = returnMessageElement.trim()
+        sendMessage(client, channel, userstate.username, returnMessageElement)
+      })
+    } else {
+      sendMessage(this, channel, userstate.username, returnMessage)
+    }
 
     if (returnType === "shutdown") {
       setTimeout(function () {
@@ -108,7 +115,7 @@ function onSubscription (channel, username, method, message, userstate) {
       setTimeout(function () {
         sendMessage(client, channel, username, "pupperB forsen1 forsen2")
         sendMessage(client, channel, username, "pupperK forsen3 forsen4")
-      }, 100)
+      }, 200)
     }
   }
 }
@@ -125,7 +132,7 @@ function onResub (channel, username, months, message, userstate, methods) {
       setTimeout(function () {
         sendMessage(client, channel, username, "nan1 nan2")
         sendMessage(client, channel, username, "nan3 nan4 GuitarTime")
-      }, 100)
+      }, 200)
     }
   }
 }
@@ -138,7 +145,7 @@ function onSubgift (channel, username, recipient, method, message, userstate) {
       let client = this
       setTimeout(function () {
         sendMessage(client, channel, username, username + "nymnGun cadyK forsenGun")
-      }, 100)
+      }, 200)
     }
   }
 }
@@ -151,7 +158,7 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
       let client = this
       setTimeout(function () {
         sendMessage(client, channel, username, "callum12Pag Clap " + username)
-      }, 100)
+      }, 200)
     }
   }
 }
