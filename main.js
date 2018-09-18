@@ -10,12 +10,12 @@ var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
 var previousLogMessage = ""
+var firstConnect = true
 global.globalCommandObject = {}
 global.localCommandObject = {}
 
-//Set default channel to only be the users channel
-options.clientoptions.dedicated.channels = ["#" + options.clientoptions.dedicated.identity.username]
-options.clientoptions.self.channels = ["#" + options.clientoptions.self.identity.username]
+options.clientoptions.dedicated.channels = []
+options.clientoptions.self.channels = []
 
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
 var clientSelf = new tmi.client(options.clientoptions.self)
@@ -32,10 +32,10 @@ global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 if (options.clientoptions.dedicated.enabled) {
   clientDedicated.connect()
 
-  clientDedicated.on("join", onJoin )
+  clientDedicated.on("connected", onConnect)
   clientDedicated.on("chat", onChat)
   clientDedicated.on("subscription", onSubscription)
-  clientDedicated.on("resub", onResub )
+  clientDedicated.on("resub", onResub)
   clientDedicated.on("subgift", onSubgift)
   clientDedicated.on("giftpaidupgrade", onGiftpaidupgrade)
   clientDedicated.on("else", onElse)
@@ -43,10 +43,10 @@ if (options.clientoptions.dedicated.enabled) {
 if (options.clientoptions.self.enabled) {
   clientSelf.connect()
 
-  clientSelf.on("join", onJoin )
+  clientSelf.on("connected", onConnect)
   clientSelf.on("chat", onChat)
   clientSelf.on("subscription", onSubscription)
-  clientSelf.on("resub", onResub )
+  clientSelf.on("resub", onResub)
   clientSelf.on("subgift", onSubgift)
   clientSelf.on("giftpaidupgrade", onGiftpaidupgrade)
   clientSelf.on("else", onElse)
@@ -58,16 +58,15 @@ if (options.clientoptions.self.enabled) {
 /* -------------------------------------------------- */
 /* -------------------------------------------------- */
 
-function onJoin (channel, username, self) {
-  if (self && channel === "#" + username) {
+function onConnect (address, port) {
+  if (firstConnect) {
+    firstConnect = false
 
-    //This is to prevent "UnhandledPromiseRejectionWarning: No response from Twitch." if you are doing stuff too fast
     if (this === clientDedicated) {
-    setTimeout(function () { updateChannels() }, 1000)
+      setTimeout(function () { updateChannels() }, 1000)
     } else {
-      setTimeout(function () { updateChannels() }, 0)
+      setTimeout(function () { updateChannels() }, 100)
     }
-
     setInterval(function () { updateChannels() }, 60000)
 
     messageHandler.updateCommandObjects()
@@ -164,7 +163,7 @@ function updateChannels () {
       mysqlConnection.query(
         sql,
         function (err, results, fields) {
-          var channelsFromDB = ["#" + clientElement.getUsername()]
+          var channelsFromDB = []
           results.forEach( function (element) {
             channelsFromDB.push("#" + element.channelName)
           })
@@ -256,12 +255,12 @@ function sendMessage (client, channel, username, message) {
 
 function timeStamp () {
   var datetime = new Date().toISOString()
-  return "[" + datetime.slice(0,10) + " " + datetime.slice(-13, -5) + "]"
+  return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
 }
 
 function log (client, message) {
-  if (previousLogMessage !== message) {
+  //if (previousLogMessage !== message) {
     console.log(timeStamp() + " " + message)
     previousLogMessage = message
-  }
+  //}
 }
