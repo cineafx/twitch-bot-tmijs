@@ -21,9 +21,6 @@ options.clientoptions.self.channels = []
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
 var clientSelf = new tmi.client(options.clientoptions.self)
 
-//TODO: find a way to apply the client.on to both tmi clients
-//TODO: make it a not anonymous function
-//TODO: make sure global timeout applies to both at the same time!!
 //TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
 
 //cast bit(1) to boolean
@@ -33,8 +30,7 @@ options.mysqloptions.typeCast = function castField( field, useDefaultTypeCasting
   // has more than one bit, then we cannot assume it is supposed to be a Boolean.
   if ( ( field.type === "BIT" ) && ( field.length === 1 ) ) {
     var bytes = field.buffer();
-
-    //account for the (hopefully rare) case in which a BIT(1) field would be NULL
+    //Account for the (hopefully rare) case in which a BIT(1) field would be NULL
     if (bytes === null) {
       return null
     }
