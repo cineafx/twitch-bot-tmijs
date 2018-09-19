@@ -13,6 +13,7 @@ var previousLogMessage = ""
 var firstConnect = true
 global.globalCommandObject = {}
 global.localCommandObject = {}
+global.channels = {}
 
 options.clientoptions.dedicated.channels = []
 options.clientoptions.self.channels = []
@@ -24,6 +25,26 @@ var clientSelf = new tmi.client(options.clientoptions.self)
 //TODO: make it a not anonymous function
 //TODO: make sure global timeout applies to both at the same time!!
 //TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
+
+//cast bit(1) to boolean
+//https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm
+options.mysqloptions.typeCast = function castField( field, useDefaultTypeCasting ) {
+  // We only want to cast bit fields that have a single-bit in them. If the field
+  // has more than one bit, then we cannot assume it is supposed to be a Boolean.
+  if ( ( field.type === "BIT" ) && ( field.length === 1 ) ) {
+    var bytes = field.buffer();
+
+    //account for the (hopefully rare) case in which a BIT(1) field would be NULL
+    if (bytes === null) {
+      return null
+    }
+    // A Buffer in Node represents a collection of 8-bit unsigned integers.
+    // Therefore, our single "bit field" comes back as the bits '0000 0001',
+    // which is equivalent to the number 1.
+    return( bytes[ 0 ] === 1 );
+  }
+  return( useDefaultTypeCasting() );
+}
 
 global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 
@@ -75,9 +96,13 @@ function onConnect (address, port) {
 }
 
 function onChat (channel, userstate, message, self) {
+
+  if (!channels[channel.toLowerCase()].useCommands) { return }
+
   // Don't listen to my own messages.. for now
   //if (self) { return }
   log(this, channel + " " + userstate.username + ": " + message)
+
 
   var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
   if (returner !== null) {
@@ -135,6 +160,7 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
 }
 
 function onElse (message) {
+  return
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
@@ -153,39 +179,48 @@ function onElse (message) {
 /* -------------------------------------------------- */
 
 function updateChannels () {
-  [clientDedicated, clientSelf].forEach( function (clientElement) {
-    if (clientElement.getOptions().enabled) {
-      var sql = "SELECT * FROM channels where self = b'1'"
-      if (clientElement === clientDedicated) {
-        sql = "SELECT * FROM channels where dedicated = b'1'"
-      }
 
-      mysqlConnection.query(
-        sql,
-        function (err, results, fields) {
-          var channelsFromDB = []
-          results.forEach( function (element) {
-            channelsFromDB.push("#" + element.channelName)
-          })
+  mysqlConnection.query(
+    "SELECT * FROM channels",
+    function (err, results, fields) {
+      //fill channel array
+      results.forEach( function (element) {
+        element.channelName = "#" + element.channelName.trim().toLowerCase()
+        channels[element.channelName] = element
+      })
 
-          clientElement.getChannels().forEach( function (element) {
-            if (!channelsFromDB.includes(element)) {
-              clientElement.part(element)
-              console.log(timeStamp() + " LEAVING: " + element)
-            }
-          })
-
-          channelsFromDB.forEach( function (element) {
-            if (!clientElement.getChannels().includes(element)) {
-              clientElement.join(element)
-              console.log(timeStamp() + " JOINING: " + element)
-            }
-          })
+      //remove
+      clientDedicated.getChannels().forEach( function (element) {
+        if (!Object.keys(channels).includes(element) && channel.dedicated === 1) {
+          clientDedicated.part(element)
+          console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
         }
-      )
+      })
+      clientSelf.getChannels().forEach( function (element) {
+        if (!Object.keys(channels).includes(element)  && channel.self === 1) {
+          clientSelf.part(element)
+          console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
+        }
+      })
 
+      //add
+      Object.keys(channels).forEach( function (channel) {
+        channel = channels[channel]
+        if (channel.dedicated) {
+          if (!clientDedicated.getChannels().includes(channel.channelName)) {
+            clientDedicated.join(channel.channelName)
+            console.log(timeStamp() + " " + clientDedicated.getUsername() + " JOINING: " + channel.channelName)
+          }
+        }
+        if (channel.self) {
+          if (!clientSelf.getChannels().includes(channel.channelName)) {
+            clientSelf.join(channel.channelName)
+            console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)
+          }
+        }
+      })
     }
-  })
+  )
 }
 
 function getUserLevel (channel, userstate) {
