@@ -2,7 +2,6 @@ var tmi = require("tmi.js")
 const mysql = require('mysql2')
 
 const messageHandler = require(__dirname + '/messageHandler.js')
-const parameterHandler = require(__dirname + '/parameterHandler.js')
 
 var options = require('./config.json')
 
@@ -99,31 +98,7 @@ function onChat (channel, userstate, message, self) {
   //if (self) { return }
   log(this, channel + " " + userstate.username + ": " + message)
 
-
-  var returner = messageHandler.handle(channel, userstate, message, getUserLevel(channel, userstate))
-  if (returner !== null) {
-    var returnType = returner.returnType
-    var returnMessage = returner.returnMessage
-
-    returnMessage = parameterHandler.checkAndReplace({message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: returner.command})
-    if (returnMessage.includes('{nl}')) {
-      let client = this
-      returnMessage.split('{nl}').forEach( function (returnMessageElement) {
-        returnMessageElement = returnMessageElement.trim()
-        sendMessage(client, channel, userstate.username, returnMessageElement)
-      })
-    } else {
-      sendMessage(this, channel, userstate.username, returnMessage)
-    }
-
-    if (returnType === "shutdown") {
-      setTimeout(function () {
-        clientDedicated.disconnect()
-        clientSelf.disconnect()
-        process.exit(0)
-      }, 1300)
-    }
-  }
+  messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
 }
 
 function onSubscription (channel, username, method, message, userstate) {
@@ -236,6 +211,22 @@ function updateChannels () {
   )
 }
 
+function cleanupGlobalTimeout () {
+  while (pastMessages.length > 0 && pastMessages[0] + 30000 < new Date().getTime()) {
+    pastMessages.shift()
+  }
+}
+
+function checkGlobalTimeout () {
+  if (pastMessages.length < 20) {
+    console.log(pastMessages.length + " message(s) in the past 30 seconds")
+
+    return false
+  } else {
+    return true
+  }
+}
+
 function getUserLevel (channel, userstate) {
   var userLevel = 0
   if (options.clientoptions.admins.includes(userstate["user-id"])) {
@@ -250,19 +241,23 @@ function getUserLevel (channel, userstate) {
   return userLevel
 }
 
-function cleanupGlobalTimeout () {
-  while (pastMessages.length > 0 && pastMessages[0] + 30000 < new Date().getTime()) {
-    pastMessages.shift()
-  }
-}
+global.messageCallback = function (client, channel, userstate, returnMessage, returnType) {
 
-function checkGlobalTimeout () {
-  if (pastMessages.length < 20) {
-    console.log(pastMessages.length + " message(s) in the past 30 seconds")
-
-    return false
+  if (returnMessage.includes('{nl}')) {
+    returnMessage.split('{nl}').forEach( function (returnMessageElement) {
+      returnMessageElement = returnMessageElement.trim()
+      sendMessage(client, channel, userstate.username, returnMessageElement)
+    })
   } else {
-    return true
+    sendMessage(client, channel, userstate.username, returnMessage)
+  }
+
+  if (returnType === "shutdown") {
+    setTimeout(function () {
+      clientDedicated.disconnect()
+      clientSelf.disconnect()
+      process.exit(0)
+    }, 1300)
   }
 }
 

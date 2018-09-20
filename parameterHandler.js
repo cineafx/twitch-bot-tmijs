@@ -1,35 +1,76 @@
 module.exports = {
   checkAndReplace: checkAndReplace,
-  check: function () {
-    //asdf
-  },
-  replace: function () {
-    //asdf
-  }
+  api: api
 }
 
 function checkAndReplace (data) {
   var message = data.message
+  data.returnMessage = data.message
 
-  if (message.includes("${user}")) {
-    message = message.replace(new RegExp("\\$\\{user\\}", 'g'), data.userstate.username)
+  user(data)
+  channel(data)
+  uptime(data)
+  timesUsed(data)
+
+  if (!api(data)) {
+    messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
   }
+}
 
-  if (message.includes("${channel}")) {
-    message = message.replace(new RegExp("\\$\\{channel\\}", 'g'), data.channel)
+function user (data) {
+  if (data.returnMessage.includes("${user}")) {
+    data.returnMessage = data.returnMessage.replace(new RegExp("\\${user}", 'g'), data.userstate.username)
   }
+}
 
-  if (message.includes("${uptime}")) {
+function channel (data) {
+  if (data.returnMessage.includes("${channel}")) {
+    data.returnMessage = data.returnMessage.replace(new RegExp("\\$\\{channel\\}", 'g'), data.channel)
+  }
+}
+
+function uptime (data) {
+  if (data.returnMessage.includes("${uptime}")) {
     var time = process.uptime()
     var uptime = (time + "").toHHMMSS()
-    message = message.replace(new RegExp("\\$\\{uptime\\}", 'g'), uptime)
+    data.returnMessage = data.returnMessage.replace(new RegExp("\\$\\{uptime\\}", 'g'), uptime)
   }
+}
 
-  if (message.includes("${timesUsed}")) {
-    message = message.replace(new RegExp("\\$\\{timesUsed\\}", 'g'), data.command.timesUsed)
+function timesUsed (data) {
+  if (data.returnMessage.includes("${timesUsed}")) {
+    data.returnMessage = data.returnMessage.replace(new RegExp("\\$\\{timesUsed\\}", 'g'), data.command.timesUsed)
   }
+}
 
-  return message
+function api (data) {
+  let apiRegExp = new RegExp("\\${api=(.*?)}", 'i')
+
+  if (apiRegExp.test(data.returnMessage)) {
+    let apiUrl = data.returnMessage.match(apiRegExp)[1]
+    let apiMethod = "GET"
+    let apiClientId = data.client.getOptions().options.clientId
+
+    data.client.api({
+      url: apiUrl,
+      method: apiMethod,
+      headers: {
+        "Client-ID": apiClientId
+      }
+    }, function (err, res, body) {
+      if (err == null) {
+        data.returnMessage = data.returnMessage.replace(new RegExp(apiRegExp, 'g'), body)
+      } else {
+        data.returnMessage = data.returnMessage.replace(new RegExp(apiRegExp, 'g'), err)
+      }
+
+        messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
+    })
+
+    return true
+  } else {
+    return false
+  }
 }
 
 String.prototype.toHHMMSS = function () { // eslint-disable-line

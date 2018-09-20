@@ -1,9 +1,11 @@
+const parameterHandler = require(__dirname + '/parameterHandler.js')
+
 module.exports = {
   handle: handle,
   updateCommandObjects: updateCommandObjects
 }
 
-function handle (channel, userstate, message, userLevel) {
+function handle (client, channel, userstate, message, userLevel) {
 
   var returnMessage = ""
   var returnType = "say"
@@ -39,10 +41,10 @@ function handle (channel, userstate, message, userLevel) {
     returnType = "shutdown"
   }
 
-  if ( returnMessage.length !== 0 ) {
-    return {returnType: returnType, returnMessage: returnMessage, command: command}
-  } else {
-    return null
+  if (returnMessage.length !== 0) {
+    /*returnMessage = */parameterHandler.checkAndReplace({client: client, message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: command})
+
+    //messageCallback(client, channel, userstate, returnMessage, returnType)
   }
 }
 
