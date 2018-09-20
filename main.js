@@ -2,6 +2,7 @@ var tmi = require("tmi.js")
 const mysql = require('mysql2')
 
 const messageHandler = require(__dirname + '/messageHandler.js')
+const moderationHandler = require(__dirname + '/moderationHandler.js')
 const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
 var options = require('./config.json')
@@ -101,16 +102,24 @@ function onChat (channel, userstate, message, self) {
   //if (self) { return }
   log(this, channel + " " + userstate.username + ": " + message)
 
-  messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+  let didModeration = false
+  /*
+  if (channels[channel.toLowerCase()].shouldModerate) {
+    moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+  }
+  */
+  if (!didModeration) {
+    messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+  }
 }
 
-function onSubscription (channel, username, method, message, userstate) {
+function onSubscription (channel, username, methods, message, userstate) {
   //{"prime":true,"plan":"Prime","planName":"Channel Subscription (forsenlol)"}
   //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
   //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
 
   if (channel === "#theonemanny") {
-    if (methods.plan === "Prime") {
+    if (methods.plan.trim() === "Prime") {
       sendMessage(this, channel, username, "forsenPrime Clap " + username)
     } else {
       sendMessage(this, channel, username, "forsen1 forsen2 " + username)
@@ -120,13 +129,12 @@ function onSubscription (channel, username, method, message, userstate) {
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
-
   if (channel === "#theonemanny") {
 
     let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
     let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
-    if (methods.plan === "Prime") {
+    if (methods.plan.trim() === "Prime") {
         sendMessage(this, channel, username, "forsenPrime Clap " + username + " resubbed for " + months + " " + timeunit)
 
     } else {
