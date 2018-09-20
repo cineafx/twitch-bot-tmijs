@@ -16,27 +16,29 @@
     "dedicated": {
       "enabled": true,
       "options": {
-          "debug": false
+        "clientId": "qwertzuiopasdfghjklyxcvbnm",
+        "debug": false
       },
       "connection": {
-          "reconnect": true
+        "reconnect": true
       },
       "identity": {
-          "username": "username",
-          "password": "oauth:xxx"
+        "username": "username",
+        "password": "oauth:xxx"
       }
     },
     "self": {
       "enabled": true,
       "options": {
-          "debug": false
+        "clientId": "qwertzuiopasdfghjklyxcvbnm",
+        "debug": false
       },
       "connection": {
-          "reconnect": true
+        "reconnect": true
       },
       "identity": {
-          "username": "username",
-          "password": "oauth:xxx"
+        "username": "username",
+        "password": "oauth:xxx"
       }    
     }
   }
