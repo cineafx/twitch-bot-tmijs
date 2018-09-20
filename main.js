@@ -107,7 +107,7 @@ function onSubscription (channel, username, method, message, userstate) {
   //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
 
   if (channel === "#theonemanny") {
-    if (methods.plan === "prime") {
+    if (methods.plan === "Prime") {
       sendMessage(this, channel, username, "forsenPrime Clap " + username)
     } else {
       sendMessage(this, channel, username, "forsen1 forsen2 " + username)
@@ -123,7 +123,7 @@ function onResub (channel, username, months, message, userstate, methods) {
     let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
     let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
-    if (methods.plan === "prime") {
+    if (methods.plan === "Prime") {
         sendMessage(this, channel, username, "forsenPrime Clap " + username + " resubbed for " + months + " " + timeunit)
 
     } else {
@@ -246,9 +246,14 @@ function getUserLevel (channel, userstate) {
 global.messageCallback = function (client, channel, userstate, returnMessage, returnType) {
 
   if (returnMessage.includes('{nl}')) {
+    let delay = !client.isMod(channel, client.getUsername()) ? 1250 : 0
+    let currentDelay = 0
     returnMessage.split('{nl}').forEach( function (returnMessageElement) {
       returnMessageElement = returnMessageElement.trim()
-      sendMessage(client, channel, userstate.username, returnMessageElement)
+      setTimeout(function () {
+        sendMessage(client, channel, userstate.username, returnMessageElement)
+      }, currentDelay)
+      currentDelay += delay
     })
   } else {
     sendMessage(client, channel, userstate.username, returnMessage)
