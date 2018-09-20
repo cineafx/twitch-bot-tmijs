@@ -42,9 +42,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   if (returnMessage.length !== 0) {
-    /*returnMessage = */parameterHandler.checkAndReplace({client: client, message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: command})
-
-    //messageCallback(client, channel, userstate, returnMessage, returnType)
+    parameterHandler.checkAndReplace({client: client, message: returnMessage, userstate: userstate, channel: channel, uptime: process.uptime(), command: command})
   }
 }
 
