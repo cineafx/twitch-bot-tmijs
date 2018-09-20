@@ -2,6 +2,7 @@ var tmi = require("tmi.js")
 const mysql = require('mysql2')
 
 const messageHandler = require(__dirname + '/messageHandler.js')
+const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
 var options = require('./config.json')
 
@@ -16,6 +17,8 @@ global.channels = {}
 
 options.clientoptions.dedicated.channels = []
 options.clientoptions.self.channels = []
+
+tmi.client.prototype.handleMessage = clientOverwrite.handleMessage
 
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
 var clientSelf = new tmi.client(options.clientoptions.self)
