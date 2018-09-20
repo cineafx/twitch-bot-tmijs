@@ -25,11 +25,11 @@ var clientSelf = new tmi.client(options.clientoptions.self)
 
 //cast bit(1) to boolean
 //https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm
-options.mysqloptions.typeCast = function castField( field, useDefaultTypeCasting ) {
+options.mysqloptions.typeCast = function castField ( field, useDefaultTypeCasting ) {
   // We only want to cast bit fields that have a single-bit in them. If the field
   // has more than one bit, then we cannot assume it is supposed to be a Boolean.
   if ( ( field.type === "BIT" ) && ( field.length === 1 ) ) {
-    var bytes = field.buffer();
+    var bytes = field.buffer()
     //Account for the (hopefully rare) case in which a BIT(1) field would be NULL
     if (bytes === null) {
       return null
@@ -37,9 +37,9 @@ options.mysqloptions.typeCast = function castField( field, useDefaultTypeCasting
     // A Buffer in Node represents a collection of 8-bit unsigned integers.
     // Therefore, our single "bit field" comes back as the bits '0000 0001',
     // which is equivalent to the number 1.
-    return( bytes[ 0 ] === 1 );
+    return ( bytes[ 0 ] === 1 )
   }
-  return( useDefaultTypeCasting() );
+  return ( useDefaultTypeCasting() )
 }
 
 global.mysqlConnection = mysql.createConnection(options.mysqloptions)
@@ -127,19 +127,34 @@ function onChat (channel, userstate, message, self) {
 }
 
 function onSubscription (channel, username, method, message, userstate) {
+  //{"prime":true,"plan":"Prime","planName":"Channel Subscription (forsenlol)"}
+  //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
+  //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
+
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, "forsen1 forsen2 " + username)
-    sendMessage(this, channel, username, "forsen3 forsen4 Clap")
+    if (methods.plan === "prime") {
+      sendMessage(this, channel, username, "forsenPrime Clap " + username)
+    } else {
+      sendMessage(this, channel, username, "forsen1 forsen2 " + username)
+      sendMessage(this, channel, username, "forsen3 forsen4 Clap")
+    }
   }
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
+
   if (channel === "#theonemanny") {
+
     let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
     let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
-    sendMessage(this, channel, username, "nan1 nan2 " + username + " resubbed for " + months + " " + timeunit)
-    sendMessage(this, channel, username, "nan3 nan4 GuitarTime")
+    if (methods.plan === "prime") {
+        sendMessage(this, channel, username, "forsenPrime Clap " + username + " resubbed for " + months + " " + timeunit)
+
+    } else {
+      sendMessage(this, channel, username, "nan1 nan2 " + username + " resubbed for " + months + " " + timeunit)
+      sendMessage(this, channel, username, "nan3 nan4 GuitarTime")
+    }
   }
 }
 
@@ -157,6 +172,7 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
 
 function onElse (message) {
   return
+  /*
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
@@ -166,6 +182,7 @@ function onElse (message) {
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
+  */
 }
 
 /* -------------------------------------------------- */
@@ -187,13 +204,13 @@ function updateChannels () {
 
       //remove
       clientDedicated.getChannels().forEach( function (element) {
-        if (!Object.keys(channels).includes(element) && channel.dedicated === 1) {
+        if (!(Object.keys(channels).includes(element) && channels[element].dedicated)) {
           clientDedicated.part(element)
           console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
         }
       })
       clientSelf.getChannels().forEach( function (element) {
-        if (!Object.keys(channels).includes(element)  && channel.self === 1) {
+        if (!(Object.keys(channels).includes(element) && channels[element].self)) {
           clientSelf.part(element)
           console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
         }
