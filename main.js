@@ -171,6 +171,8 @@ function updateChannels () {
   mysqlConnection.query(
     "SELECT * FROM channels",
     function (err, results, fields) {
+      //clears old channels array
+      channels = {}
       //fill channel array
       results.forEach( function (element) {
         element.channelName = "#" + element.channelName.trim().toLowerCase()
@@ -264,6 +266,11 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
 function sendMessage (client, channel, username, message) {
 
   var delay = (client.getUsername() === username && !client.isMod(channel, client.getUsername())) ? 1250 : 0
+
+  //Allows for better grouping if sending multi messages from both bots at the same time
+  if (client === clientSelf) {
+    delay += 50
+  }
 
   setTimeout(function () {
 
