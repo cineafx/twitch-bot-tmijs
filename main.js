@@ -386,7 +386,7 @@ function sendMessage (client, channel, username, message) {
   }, delay)
 }
 
-function timeStamp () {
+global.timeStamp = function () {
   var datetime = new Date().toISOString()
   return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
 }

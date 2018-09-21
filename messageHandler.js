@@ -1,4 +1,5 @@
 const parameterHandler = require(__dirname + '/parameterHandler.js')
+var lastCommandUsage = {}
 
 module.exports = {
   handle: handle,
@@ -13,9 +14,35 @@ function handle (client, channel, userstate, message, userLevel) {
   var command = getCommand(input, channel)
   if (command) {
     if (userLevel >= command.userLevel) {
-      returnMessage = command.response
-      increaseTimesUsed(command)
-      setTimeout(function () { updateCommandObjects() }, 500 )
+      let isLocal = command.hasOwnProperty("channelName")
+      
+      //create channel object if not existing
+      if (!lastCommandUsage.hasOwnProperty(channel)) {
+        lastCommandUsage[channel] = {}
+      }
+      //create localCommands object if not existing
+      if (!lastCommandUsage[channel].hasOwnProperty("localCommands")) {
+        lastCommandUsage[channel]["localCommands"] = {}
+      }
+      //create globalCommands object if not existing
+      if (!lastCommandUsage[channel].hasOwnProperty("globalCommands")) {
+        lastCommandUsage[channel]["globalCommands"] = {}
+      }
+
+      let commandType = isLocal ? "localCommands" : "globalCommands"
+      let lastTimeUsed = lastCommandUsage[channel][commandType][command.ID] || 0
+      let currentTimeMillis = new Date().getTime()
+
+      //calculate if cooldown applies
+      if (lastTimeUsed + command.cooldown * 1000 < currentTimeMillis) {
+        lastCommandUsage[channel][commandType][command.ID] = currentTimeMillis
+
+        returnMessage = command.response
+        increaseTimesUsed(command)
+        setTimeout(function () { updateCommandObjects() }, 500 )
+      } else {
+        console.log(timeStamp() + " Command cooldown: " + ((lastTimeUsed + command.cooldown * 1000) - currentTimeMillis) + "ms of cooldown remaining")
+      }
     }
   }
 
@@ -73,7 +100,7 @@ function updateCommandObjects () {
     }
   )
   mysqlConnection.query(
-    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userLevel`, `localCommands`.`timeout`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` LEFT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
+    'SELECT `localCommands`.`ID`, `localCommands`.`channel`, `localCommands`.`command`, `localCommands`.`response`, `localCommands`.`userLevel`, `localCommands`.`cooldown`, `localCommands`.`timesUsed`, `channels`.`channelName` FROM `localCommands` LEFT JOIN `channels` ON `channels`.`id` = `localCommands`.`channel`',
     function (err, results, fields) {
       results.forEach( function (element) {
         element.command = element.command.trim().toLowerCase()
