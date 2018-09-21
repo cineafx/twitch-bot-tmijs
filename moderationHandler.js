@@ -4,13 +4,13 @@ module.exports = {
   handle: handle
 }
 
-function handle(client, channel, userstate, message, userLevel) {
+function handle (client, channel, userstate, message, userLevel) {
 
-  emojiCount(message)
+  let emojiCount = emojiCount(message)
 
 }
 
-function emojiCount(message) {
+function emojiCount (message) {
   let emojiMatch = message.match(emojiReg)
 
   if (emojiMatch !== null) {

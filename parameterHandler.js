@@ -1,3 +1,5 @@
+const apiRegExp = new RegExp("\\${api=(.*?)}", 'i')
+
 module.exports = {
   checkAndReplace: checkAndReplace,
   api: api
@@ -44,7 +46,6 @@ function timesUsed (data) {
 }
 
 function api (data) {
-  let apiRegExp = new RegExp("\\${api=(.*?)}", 'i')
 
   if (apiRegExp.test(data.returnMessage)) {
     let apiUrl = data.returnMessage.match(apiRegExp)[1]

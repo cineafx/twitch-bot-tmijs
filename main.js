@@ -7,6 +7,9 @@ const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
 var options = require('./config.json')
 
+const nlRegEx = new RegExp("{nl\\d*}", 'ig')
+const delayRegEx = new RegExp("\\d*}", 'ig')
+
 var pastMessages = []
 var addSpecialCharacter = new Object()
 var lastMessageTime = 0
@@ -19,6 +22,7 @@ global.channels = {}
 options.clientoptions.dedicated.channels = []
 options.clientoptions.self.channels = []
 
+//overwrite part of the original client.js
 tmi.client.prototype.handleMessage = clientOverwrite.handleMessage
 
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
@@ -255,16 +259,35 @@ function getUserLevel (channel, userstate) {
 }
 
 global.messageCallback = function (client, channel, userstate, returnMessage, returnType) {
-
-  if (returnMessage.includes('{nl}')) {
+  if (nlRegEx.test(returnMessage)) {
     let delay = !client.isMod(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
-    returnMessage.split('{nl}').forEach( function (returnMessageElement) {
+
+    let regNls = returnMessage.match(nlRegEx)
+    let regDelay = returnMessage.match(delayRegEx)
+    //this is simply needed to not cause errors later at currentDelay += regDelay[index]
+    //returnMEssage.split is 1 longer than regDelay --> would throw array out of bound
+    regDelay.push('{nl}')
+
+    //get the raw number from {nlXXXX}
+    //if only {nl} return 0
+    regDelay.forEach( function (element, index) {
+      regDelay[index] = parseInt(element) || 0
+    })
+
+    returnMessage.split(nlRegEx).forEach( function (returnMessageElement, index) {
       returnMessageElement = returnMessageElement.trim()
       setTimeout(function () {
         sendMessage(client, channel, userstate.username, returnMessageElement)
       }, currentDelay)
-      currentDelay += delay
+
+      currentDelay += regDelay[index]
+      //only add the "pleb delay" if pleb.
+      if (regDelay[index] < delay) {
+        //Imagine regDelay[index] is 1000ms and delay is 1250ms
+        //because the 1000ms where already added earlier now only the delay of 250 needs to be added
+        currentDelay += delay - regDelay[index]
+      }
     })
   } else {
     sendMessage(client, channel, userstate.username, returnMessage)
