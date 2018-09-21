@@ -278,7 +278,6 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
 }
 
 queueEmitter.on('event', function () {
-  console.log("----")
   //makes it run asynchronously
   setImmediate(function () {
     if (messageQueue.length > 0) {
