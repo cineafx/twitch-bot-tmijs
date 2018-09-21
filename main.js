@@ -1,17 +1,24 @@
 var tmi = require("tmi.js")
 const mysql = require('mysql2')
+const EventEmitter = require('events');
 
+//import of
 const messageHandler = require(__dirname + '/messageHandler.js')
 const moderationHandler = require(__dirname + '/moderationHandler.js')
 const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
-var options = require('./config.json')
+//Message queue
+class QueueEmitter extends EventEmitter {}
+const queueEmitter = new QueueEmitter()
+global.messageQueue = []
 
+//regex
 const nlRegEx = new RegExp("{nl\\d*}", 'ig')
 const delayRegEx = new RegExp("\\d*}", 'ig')
 
+//other variables
 var pastMessages = []
-var addSpecialCharacter = new Object()
+var addSpecialCharacter = {}
 var lastMessageTime = 0
 var previousLogMessage = ""
 var firstConnect = true
@@ -19,16 +26,17 @@ global.globalCommandObject = {}
 global.localCommandObject = {}
 global.channels = {}
 
+//options
+var options = require('./config.json')
 options.clientoptions.dedicated.channels = []
 options.clientoptions.self.channels = []
 
 //overwrite part of the original client.js
 tmi.client.prototype.handleMessage = clientOverwrite.handleMessage
 
+//creating clients
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
 var clientSelf = new tmi.client(options.clientoptions.self)
-
-//TODO: make sure addSpeicalCharacter does NOT apply to both at the same time!!
 
 //cast bit(1) to boolean
 //https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm
@@ -99,19 +107,15 @@ function onConnect (address, port) {
 }
 
 function onChat (channel, userstate, message, self) {
-
   if (!channels[channel.toLowerCase()].useCommands) { return }
 
-  // Don't listen to my own messages.. for now
-  //if (self) { return }
   log(this, channel + " " + userstate.username + ": " + message)
 
   let didModeration = false
-  /*
   if (channels[channel.toLowerCase()].shouldModerate) {
-    moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+    didModeration = moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
   }
-  */
+
   if (!didModeration) {
     messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
   }
@@ -259,14 +263,63 @@ function getUserLevel (channel, userstate) {
 }
 
 global.messageCallback = function (client, channel, userstate, returnMessage, returnType) {
-  if (nlRegEx.test(returnMessage)) {
+
+  if (returnType === "shutdown") {
+    setTimeout(function () {
+      clientDedicated.disconnect()
+      clientSelf.disconnect()
+      process.exit(0)
+    }, 1500)
+  }
+
+  messageQueue.push({checked: false, isBeingChecked: false, allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: returnMessage}})
+  queueEmitter.emit('event')
+
+}
+
+queueEmitter.on('event', function () {
+  console.log("----")
+  //makes it run asynchronously
+  setImmediate(function () {
+    if (messageQueue.length > 0) {
+      if (messageQueue[0].checked) {
+        if (messageQueue[0].allow) {
+          queueEmitter.emit('event')
+          let msgObj = messageQueue.shift().messageObj
+          handleNewLine(msgObj.client, msgObj.channel, msgObj.username, msgObj.message)
+        } else {
+          messageQueue.shift()
+        }
+      } else if (!messageQueue[0].isBeingChecked){
+        messageQueue[0].isBeingChecked = true
+
+        moderationHandler.forsenApi(messageQueue[0].messageObj.message, {callback: updateMessageQueue, args: messageQueue[0]})
+      }
+    }
+  })
+})
+
+function updateMessageQueue (args) {
+  if (messageQueue.length > 0) {
+    messageQueue.forEach( function (element, index) {
+      if (element.messageObj === args.messageObj) {
+        messageQueue[index].checked = true
+        messageQueue[index].allow = args.allow
+      }
+    })
+  }
+  queueEmitter.emit('event')
+}
+
+function handleNewLine (client, channel, username, message) {
+  if (nlRegEx.test(message)) {
     let delay = !client.isMod(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
 
-    let regNls = returnMessage.match(nlRegEx)
-    let regDelay = returnMessage.match(delayRegEx)
+    let regNls = message.match(nlRegEx)
+    let regDelay = message.match(delayRegEx)
     //this is simply needed to not cause errors later at currentDelay += regDelay[index]
-    //returnMEssage.split is 1 longer than regDelay --> would throw array out of bound
+    //message.split is 1 longer than regDelay --> would throw array out of bound
     regDelay.push('{nl}')
 
     //get the raw number from {nlXXXX}
@@ -275,10 +328,10 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
       regDelay[index] = parseInt(element) || 0
     })
 
-    returnMessage.split(nlRegEx).forEach( function (returnMessageElement, index) {
-      returnMessageElement = returnMessageElement.trim()
+    message.split(nlRegEx).forEach( function (messageElement, index) {
+      messageElement = messageElement.trim()
       setTimeout(function () {
-        sendMessage(client, channel, userstate.username, returnMessageElement)
+        sendMessage(client, channel, username, messageElement)
       }, currentDelay)
 
       currentDelay += regDelay[index]
@@ -290,15 +343,7 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
       }
     })
   } else {
-    sendMessage(client, channel, userstate.username, returnMessage)
-  }
-
-  if (returnType === "shutdown") {
-    setTimeout(function () {
-      clientDedicated.disconnect()
-      clientSelf.disconnect()
-      process.exit(0)
-    }, 1300)
+    sendMessage(client, channel, username, message)
   }
 }
 
