@@ -15,7 +15,7 @@ function handle (client, channel, userstate, message, userLevel) {
   if (command) {
     if (userLevel >= command.userLevel) {
       let isLocal = command.hasOwnProperty("channelName")
-      
+
       //create channel object if not existing
       if (!lastCommandUsage.hasOwnProperty(channel)) {
         lastCommandUsage[channel] = {}
@@ -34,7 +34,8 @@ function handle (client, channel, userstate, message, userLevel) {
       let currentTimeMillis = new Date().getTime()
 
       //calculate if cooldown applies
-      if (lastTimeUsed + command.cooldown * 1000 < currentTimeMillis) {
+      //The part after the || is used if both bots are trying to answer the command ... both are now allowed ... 25ms is very generous ... 5 should normally be enough though.
+      if ((lastTimeUsed + command.cooldown * 1000 < currentTimeMillis) || lastTimeUsed + 25 > currentTimeMillis) {
         lastCommandUsage[channel][commandType][command.ID] = currentTimeMillis
 
         returnMessage = command.response
