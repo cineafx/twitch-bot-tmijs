@@ -111,14 +111,11 @@ function onChat (channel, userstate, message, self) {
 
   log(this, channel + " " + userstate.username + ": " + message)
 
-  let didModeration = false
   if (channels[channel.toLowerCase()].shouldModerate) {
-    didModeration = moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+    moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
   }
 
-  if (!didModeration) {
-    messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
-  }
+  messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
 }
 
 function onSubscription (channel, username, methods, message, userstate) {
@@ -292,7 +289,7 @@ queueEmitter.on('event', function () {
       } else if (!messageQueue[0].isBeingChecked){
         messageQueue[0].isBeingChecked = true
 
-        moderationHandler.forsenApi(messageQueue[0].messageObj.message, {callback: updateMessageQueue, args: messageQueue[0]})
+        moderationHandler.forsenApi(messageQueue[0].messageObj.message, {callback: updateMessageQueue, args: messageQueue[0]}, true)
       }
     }
   })
