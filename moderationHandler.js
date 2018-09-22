@@ -1,5 +1,5 @@
 const emojiReg = new RegExp("[\uD83C-\uDBFF\uDC00-\uDFFF]{2}", 'g')
-const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|ResidentSleeper|clips\.twitch\.tv\/", 'ig')
+const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/", 'ig')
 const request = require('request');
 
 module.exports = {
@@ -12,11 +12,11 @@ function handle (client, channel, userstate, message, userLevel) {
   let emojiCounter = emojiCount(message)
 
   if (emojiCounter > 25) {
-    console.log()
+    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
     console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
     console.log("Would have timed " + userstate.username + " out. (Too many emojis: " + emojiCounter + " emoji character used.")
     console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    console.log()
+    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
     //args.messageObj.client.timeout(channel, userstate.username, 1, "Too many emojis: " + emojiCounter + " emoji character used.")
   }
 
@@ -36,12 +36,12 @@ function emojiCount (message) {
 
 function modAction (args) {
   if (!args.allow && args.messageObj.userLevel < 2) {
-    console.log()
+    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
     console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
     console.log("Would have timed " + args.messageObj.username + " out. (Messaged mached automatic filter)")
     console.log(args.messageObj.message)
     console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    console.log()
+    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
     //args.messageObj.client.timeout(args.messageObj.channel, args.messageObj.username, 1, "Messaged matched automatic filter")
   }
 }
