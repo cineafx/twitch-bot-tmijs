@@ -20,7 +20,6 @@ const delayRegEx = new RegExp("\\d*}", 'ig')
 var pastMessages = []
 var addSpecialCharacter = {}
 var lastMessageTime = 0
-var previousLogMessage = ""
 var firstConnect = true
 global.globalCommandObject = {}
 global.localCommandObject = {}
@@ -109,13 +108,15 @@ function onConnect (address, port) {
 function onChat (channel, userstate, message, self) {
   if (!channels[channel.toLowerCase()].useCommands) { return }
 
-  log(this, channel + " " + userstate.username + ": " + message)
+  let userLevel = getUserLevel(channel, userstate)
+
+  messageLog(this, channel, userstate, message, userLevel)
 
   if (channels[channel.toLowerCase()].shouldModerate) {
-    moderationHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+    moderationHandler.handle(this, channel, userstate, message, userLevel)
   }
 
-  messageHandler.handle(this, channel, userstate, message, getUserLevel(channel, userstate))
+  messageHandler.handle(this, channel, userstate, message, userLevel)
 }
 
 function onSubscription (channel, username, methods, message, userstate) {
@@ -388,9 +389,11 @@ global.timeStamp = function () {
   return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
 }
 
-function log (client, message) {
-  //if (previousLogMessage !== message) {
-    console.log(timeStamp() + " " + message)
-    previousLogMessage = message
-  //}
+function messageLog (client, channel, userstate, message, userLevel) {
+  mysqlConnection.execute(
+    "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
+    [client.getUsername(), channels[channel].ID, userstate.username, message, userLevel]
+  )
+
+  console.log(timeStamp() + " " + channel + " " + userstate.username + ": " + message)
 }
