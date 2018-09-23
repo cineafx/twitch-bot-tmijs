@@ -12,15 +12,10 @@ function handle (client, channel, userstate, message, userLevel) {
   let emojiCounter = emojiCount(message)
 
   if (emojiCounter > 25) {
-    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
-    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
-    console.log("Would have timed " + userstate.username + " out. (Too many emojis: " + emojiCounter + " emoji character used.")
-    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    //args.messageObj.client.timeout(channel, userstate.username, 1, "Too many emojis: " + emojiCounter + " emoji character used.")
+    modAction (client, channel, userstate.username, message, userLevel, 1, "(Too many emojis: " + emojiCounter + " emoji character used.)")
   }
 
-  forsenApi(message, {callback: modAction, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
+  forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
 
 }
 
@@ -34,15 +29,15 @@ function emojiCount (message) {
   }
 }
 
-function modAction (args) {
+function forsenApiCallback (args) {
   if (!args.allow && args.messageObj.userLevel < 2) {
-    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
-    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
-    console.log("Would have timed " + args.messageObj.username + " out. (Messaged mached automatic filter)")
-    console.log(args.messageObj.message)
-    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
-    //args.messageObj.client.timeout(args.messageObj.channel, args.messageObj.username, 1, "Messaged matched automatic filter")
+    modAction (args.messageObj.client,
+      args.messageObj.channel,
+      args.messageObj.username,
+      args.messageObj.message,
+      args.messageObj.userLevel,
+      1,
+      "(Message matched automatic filter)")
   }
 }
 
@@ -69,6 +64,14 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
         callbackMetaData.args.allow = true
       } else {
         if (logIfBanned) {
+          modAction (callbackMetaData.args.messageObj.client,
+            callbackMetaData.args.messageObj.channel,
+            callbackMetaData.args.messageObj.username,
+            callbackMetaData.args.messageObj.message,
+            callbackMetaData.args.messageObj.userLevel,
+            -1,
+            "logIfBanned")
+
           console.log("-------------------------------------------------------")
           console.log("‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼ ‼")
           console.log("-------------------------------------------------------")
@@ -88,4 +91,23 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
     }
     callbackMetaData.callback(callbackMetaData.args)
   });
+}
+
+function modAction (client, channel, username, message, userLevel, timeoutLength, reason) {
+
+  mysqlConnection.execute(
+    "INSERT INTO `IceCreamDataBase`.`modActionLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`, `timeoutLength`, `reason`) VALUES (?, ?, ?, ?, ?, ?, ?);",
+    [client.getUsername(), channels[channel].ID, username, message, userLevel, timeoutLength, reason]
+  )
+
+  if (timeoutLength >= 0) {
+    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
+    console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
+    console.log("Would have timed " + username + " out. (Messaged mached automatic filter)")
+    console.log(message)
+    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
+    console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
+
+    //client.timeout(channel, username, timeoutLength, reason)
+  }
 }

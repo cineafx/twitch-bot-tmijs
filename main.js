@@ -110,7 +110,7 @@ function onChat (channel, userstate, message, self) {
 
   let userLevel = getUserLevel(channel, userstate)
 
-  messageLog(this, channel, userstate, message, userLevel)
+  messageLog(this, channel, userstate.username, message, userLevel)
 
   if (channels[channel.toLowerCase()].shouldModerate) {
     moderationHandler.handle(this, channel, userstate, message, userLevel)
@@ -389,11 +389,11 @@ global.timeStamp = function () {
   return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
 }
 
-function messageLog (client, channel, userstate, message, userLevel) {
+function messageLog (client, channel, username, message, userLevel) {
   mysqlConnection.execute(
     "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
-    [client.getUsername(), channels[channel].ID, userstate.username, message, userLevel]
+    [client.getUsername(), channels[channel].ID, username, message, userLevel]
   )
 
-  console.log(timeStamp() + " " + channel + " " + userstate.username + ": " + message)
+  console.log(timeStamp() + " " + channel + " " + username + ": " + message)
 }
