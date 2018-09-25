@@ -1,5 +1,5 @@
 const emojiReg = new RegExp("[\uD83C-\uDBFF\uDC00-\uDFFF]{2}", 'g')
-const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/", 'ig')
+const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/|blood", 'ig')
 const request = require('request');
 
 module.exports = {
@@ -12,7 +12,7 @@ function handle (client, channel, userstate, message, userLevel) {
   let emojiCounter = emojiCount(message)
 
   if (emojiCounter > 25) {
-    modAction (client, channel, userstate.username, message, userLevel, 1, "(Too many emojis: " + emojiCounter + " emoji character used.)")
+    modAction (client, channel, userstate.username, message, userLevel, {"permanent":false, "length":1, "name":"EmojiSpam",	"phrase":emojiCounter})
   }
 
   forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
@@ -36,8 +36,7 @@ function forsenApiCallback (args) {
       args.messageObj.username,
       args.messageObj.message,
       args.messageObj.userLevel,
-      1,
-      "(Message matched automatic filter)")
+      args.banphrase_data)
   }
 }
 
@@ -63,6 +62,8 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
       if (!body.banned) {
         callbackMetaData.args.allow = true
       } else {
+        console.log(JSON.stringify(body))
+
         if (logIfBanned) {
           modAction (callbackMetaData.args.messageObj.client,
             callbackMetaData.args.messageObj.channel,
@@ -85,6 +86,7 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
           console.log("-------------------------------------------------------")
         }
         callbackMetaData.args.allow = false
+        callbackMetaData.args.banphrase_data = body.banphrase_data
       }
     } else {
       callbackMetaData.args.allow = true
@@ -93,21 +95,24 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
   });
 }
 
-function modAction (client, channel, username, message, userLevel, timeoutLength, reason) {
+function modAction (client, channel, username, message, userLevel, banphrase_data) {
+
 
   mysqlConnection.execute(
     "INSERT INTO `IceCreamDataBase`.`modActionLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`, `timeoutLength`, `reason`) VALUES (?, ?, ?, ?, ?, ?, ?);",
-    [client.getUsername(), channels[channel].ID, username, message, userLevel, timeoutLength, reason]
+    [client.getUsername(), channels[channel].ID, username, message, userLevel, banphrase_data.length, banphrase_data.name + ": " + banphrase_data.phrase]
   )
 
-  if (timeoutLength >= 0) {
+
+  if (banphrase_data.length >= 0) {
     console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
     console.log("👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇 👇")
-    console.log("Would have timed " + username + " out. (Messaged mached automatic filter)")
+    console.log("Would have timed " + username + " out. (" + banphrase_data.name + ": " + banphrase_data.phrase + ")")
     console.log(message)
     console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
     console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
 
-    //client.timeout(channel, username, timeoutLength, reason)
+    banphrase_data.length = 1
+    //client.timeout(channel, username, banphrase_data.length, "Matched banphrase: " + banphrase_data.name)
   }
 }
