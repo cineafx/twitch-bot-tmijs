@@ -5,6 +5,9 @@
 
 ```json
 {
+  "waoptions": {
+    "appid": "XXXXXX-XXXXXXXXXX"
+  },
   "mysqloptions": {
     "host": "example.com",
     "user": "exampleuser",

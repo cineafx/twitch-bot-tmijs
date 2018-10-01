@@ -1,6 +1,6 @@
 var tmi = require("tmi.js")
 const mysql = require('mysql2')
-const EventEmitter = require('events');
+const EventEmitter = require('events')
 
 //import of
 const messageHandler = require(__dirname + '/messageHandler.js')
@@ -29,6 +29,9 @@ global.channels = {}
 var options = require('./config.json')
 options.clientoptions.dedicated.channels = []
 options.clientoptions.self.channels = []
+
+//make wolfram alpha appid global
+global.waAppid = options.waoptions.appid
 
 //overwrite part of the original client.js
 tmi.client.prototype.handleMessage = clientOverwrite.handleMessage
@@ -287,7 +290,7 @@ queueEmitter.on('event', function () {
         } else {
           messageQueue.shift()
         }
-      } else if (!messageQueue[0].isBeingChecked){
+      } else if (!messageQueue[0].isBeingChecked) {
         messageQueue[0].isBeingChecked = true
 
         moderationHandler.forsenApi(messageQueue[0].messageObj.message, {callback: updateMessageQueue, args: messageQueue[0]}, true)
@@ -390,10 +393,11 @@ global.timeStamp = function () {
 }
 
 function messageLog (client, channel, username, message, userLevel) {
+  /*
   mysqlConnection.execute(
     "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
     [client.getUsername(), channels[channel].ID, username, message, userLevel]
   )
-
+  */
   console.log(timeStamp() + " " + channel + " " + username + ": " + message)
 }

@@ -1,8 +1,11 @@
 const apiRegExp = new RegExp("\\${api=(.*?)}", 'i')
 
+const request = require('request')
+
 module.exports = {
   checkAndReplace: checkAndReplace,
-  api: api
+  api: api,
+  wolframAlphaApi: wolframAlphaApi
 }
 
 function checkAndReplace (data) {
@@ -72,6 +75,30 @@ function api (data) {
   } else {
     return false
   }
+}
+
+function wolframAlphaApi (data) {
+  //https://api.wolframalpha.com/v1/result?i=" +  + "&appid=" + asdf
+  let input = data.input.allParameter
+
+  let apiUrl = "https://api.wolframalpha.com/v1/result?i=" + encodeURIComponent(input) + "&appid=" + waAppid
+
+  request({
+    url: apiUrl,
+    method: "GET"
+  }, function (err, res, body) {
+    data.returnMessage = "Query returned: "
+    if (err == null) {
+      data.returnMessage += body
+    } else {
+      data.returnMessage += err
+    }
+
+    messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
+  })
+
+
+  //messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
 }
 
 String.prototype.toHHMMSS = function () { // eslint-disable-line

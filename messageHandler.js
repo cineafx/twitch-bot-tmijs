@@ -47,6 +47,11 @@ function handle (client, channel, userstate, message, userLevel) {
     }
   }
 
+  /* query */
+  if (userLevel === 4 && input.command === "<query" /*&& returnMessage.length !== 0*/) {
+    parameterHandler.wolframAlphaApi({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, input: input})
+  }
+
   /* eval */
   if (userLevel === 4 && input.command === "<eval") {
     try {
@@ -55,7 +60,7 @@ function handle (client, channel, userstate, message, userLevel) {
       returnMessage = err.message
     }
 
-    ["mysql", "identity", "oauth", "host", "password"].forEach( function (element) {
+    ["mysql", "identity", "oauth", "host", "password", "appid"].forEach( function (element) {
       if (returnMessage.toLowerCase().includes(element)
           || input.allParameter.toLowerCase().includes(element)) {
         returnMessage = "***"
