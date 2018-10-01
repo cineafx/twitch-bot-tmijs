@@ -96,9 +96,6 @@ function wolframAlphaApi (data) {
 
     messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
   })
-
-
-  //messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
 }
 
 String.prototype.toHHMMSS = function () { // eslint-disable-line
