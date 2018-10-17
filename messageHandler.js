@@ -48,7 +48,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* query */
-  if (userLevel === 4 && input.command === "<query" /*&& returnMessage.length !== 0*/) {
+  if (userLevel === 4 && input.command === "<query") {
     parameterHandler.wolframAlphaApi({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, input: input})
   }
 
