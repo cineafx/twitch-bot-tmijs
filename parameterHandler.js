@@ -37,7 +37,7 @@ function channel (data) {
 function uptime (data) {
   if (data.returnMessage.includes("${uptime}")) {
     var time = process.uptime()
-    var uptime = (time + "").toHHMMSS()
+    var uptime = (time + "").toDDHHMMSS()
     data.returnMessage = data.returnMessage.replace(new RegExp("\\$\\{uptime\\}", 'g'), uptime)
   }
 }
@@ -98,11 +98,12 @@ function wolframAlphaApi (data) {
   })
 }
 
-String.prototype.toHHMMSS = function () { // eslint-disable-line
+String.prototype.toDDHHMMSS = function () { // eslint-disable-line
     var secNum = parseInt(this, 10) // don't forget the second param
-    var hours = Math.floor(secNum / 3600)
-    var minutes = Math.floor((secNum - (hours * 3600)) / 60)
-    var seconds = secNum - (hours * 3600) - (minutes * 60)
+    var days = Math.floor(secNum / 86400)
+    var hours = Math.floor((secNum - (days * 86400)) / 3600)
+    var minutes = Math.floor((secNum - (days * 86400) - (hours * 3600)) / 60)
+    var seconds = secNum - (days * 86400) - (hours * 3600) - (minutes * 60)
 
     /*
     if (hours < 10) { hours = "0" + hours }
@@ -116,6 +117,9 @@ String.prototype.toHHMMSS = function () { // eslint-disable-line
     }
     if (hours > 0) {
       time = hours + 'h ' + time
+    }
+    if (days > 0) {
+      time = days + 'd ' + time
     }
     return time
 }
