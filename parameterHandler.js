@@ -12,6 +12,7 @@ function checkAndReplace (data) {
   var message = data.message
   data.returnMessage = data.message
 
+  firstParameterOrUser(data)
   user(data)
   channel(data)
   uptime(data)
@@ -19,6 +20,22 @@ function checkAndReplace (data) {
 
   if (!api(data)) {
     messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
+  }
+}
+
+function firstParameterOrUser (data) {
+  if (data.returnMessage.includes("${p1||user}")) {
+    let replacement = data.userstate.username
+    let firstParameter = data.input.firstParameter
+    if (firstParameter !== null) {
+      if (data.input.firstParameter.startsWith("@")) {
+        firstParameter = firstParameter.substring(1)
+      }
+      if (isUserInChannel(firstParameter, data.channel)) {
+        replacement = firstParameter
+      }
+    }
+    data.returnMessage = data.returnMessage.replace(new RegExp("\\${p1\\|\\|user}", 'g'), replacement)
   }
 }
 
@@ -96,6 +113,18 @@ function wolframAlphaApi (data) {
 
     messageCallback(data.client, data.channel, data.userstate, data.returnMessage, data.returnType)
   })
+}
+
+function isUserInChannel (userName, channelName) {
+  var foundUser = false
+  let allChatters = Object.values(channels[channelName].chatters.chatters)
+  allChatters = [].concat.apply([], allChatters)
+  for (var i = 0; i < allChatters.length && !foundUser; i++) {
+    if (allChatters[i].toLowerCase() === userName.toLowerCase()) {
+      foundUser = true
+    }
+  }
+  return foundUser
 }
 
 String.prototype.toDDHHMMSS = function () { // eslint-disable-line

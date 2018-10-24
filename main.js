@@ -1,6 +1,7 @@
 var tmi = require("tmi.js")
 const mysql = require('mysql2')
 const EventEmitter = require('events')
+const request = require('request')
 
 //import of
 const messageHandler = require(__dirname + '/messageHandler.js')
@@ -105,6 +106,9 @@ function onConnect (address, port) {
 
     messageHandler.updateCommandObjects()
     setInterval(function () { messageHandler.updateCommandObjects() }, 60000)
+
+    setTimeout(function () { updateChatters() }, 2000)
+    setInterval(function () { updateChatters() }, 30000)
   }
 }
 
@@ -185,6 +189,28 @@ function onElse (message) {
 /* ---------------- OTHER FUNCTIONS ----------------- */
 /* -------------------------------------------------- */
 /* -------------------------------------------------- */
+
+function updateChatters () {
+  for (var channelKey in channels) {
+    if (channels.hasOwnProperty(channelKey)) {
+      let channelName = channelKey
+
+      if (channelName.startsWith("#")) {
+        channelName = channelName.substring(1).toLowerCase()
+      }
+      var chattersUrl = "https://tmi.twitch.tv/group/user/" + channelName + "/chatters"
+      request({
+        url: chattersUrl,
+        method: "GET",
+        JSON: true
+      }, function (err, res, body) {
+        if (err == null) {
+          channels["#" + channelName].chatters = JSON.parse(body)
+        }
+      })
+    }
+  }
+}
 
 function updateChannels () {
 

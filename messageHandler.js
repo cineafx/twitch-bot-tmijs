@@ -75,7 +75,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   if (returnMessage.length !== 0) {
-    parameterHandler.checkAndReplace({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, uptime: process.uptime(), command: command})
+    parameterHandler.checkAndReplace({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, uptime: process.uptime(), command: command, input: input})
   }
 }
 
