@@ -11,7 +11,7 @@ function handle (client, channel, userstate, message, userLevel) {
   var returnMessage = ""
   var returnType = "say"
   var input = splitInput(message)
-  var command = getCommand(input, channel)
+  var command = getCommand(input, channel, userLevel)
   if (command) {
     if (userLevel >= command.userLevel) {
       let isLocal = command.hasOwnProperty("channelName")
@@ -69,7 +69,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* shutdown */
-  if (userLevel === 4 && ["<shutdown", "<sh", "<sd"].includes(input.command)) {
+  if (userLevel === 4 && ["<shutdown", "<sh", "<sd", "<restart", "<rs", "<reboot", "<rb"].includes(input.command)) {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
   }
@@ -101,7 +101,7 @@ function updateCommandObjects () {
     function (err, results, fields) {
       results.forEach( function (element) {
         element.command = element.command.trim().toLowerCase()
-        globalCommandObject[element.command] = element
+        globalCommandObject[element.ID] = element
       })
     }
   )
@@ -110,35 +110,69 @@ function updateCommandObjects () {
     function (err, results, fields) {
       results.forEach( function (element) {
         element.command = element.command.trim().toLowerCase()
-        localCommandObject[element.command] = element
+        localCommandObject[element.ID] = element
       })
     }
   )
 }
 
-function containsGlobalCommand (input, channel) {
-  return globalCommandObject.hasOwnProperty(input.command)
-}
-
-function containsLocalCommand (input, channel) {
-  var contains = false
-  if (localCommandObject.hasOwnProperty(input.command)) {
-    if ("#" + localCommandObject[input.command].channelName === channel) {
-      contains = true
+function getGlobalCommandID (input, channel, userLevel) {
+  var cmdIDs = []
+  for (var key in globalCommandObject) {
+    let element = globalCommandObject[key]
+    if (element.command === input.command) {
+      if (element.userLevel <= userLevel) {
+        cmdIDs.push(element)
+      }
     }
   }
-  return contains
+  if (cmdIDs.length > 0) {
+    var elementWithHighestUserLevel = {userLevel: -1}
+    cmdIDs.forEach( function (element) {
+      if (element.userLevel > elementWithHighestUserLevel.userLevel) {
+        elementWithHighestUserLevel = element
+      }
+    })
+    return elementWithHighestUserLevel.ID
+  } else {
+    return -1
+  }
 }
 
-function getCommand (input, channel) {
+function getLocalCommandID (input, channel, userLevel) {
+  var cmdIDs = []
+  for (var key in localCommandObject) {
+    let element = localCommandObject[key]
+    if (element.command === input.command) {
+      if ("#" + element.channelName === channel && element.userLevel <= userLevel) {
+        cmdIDs.push(element)
+      }
+    }
+  }
+  if (cmdIDs.length > 0) {
+    var elementWithHighestUserLevel = {userLevel: -1}
+    cmdIDs.forEach( function (element) {
+      if (element.userLevel > elementWithHighestUserLevel.userLevel) {
+        elementWithHighestUserLevel = element
+      }
+    })
+    return elementWithHighestUserLevel.ID
+  } else {
+    return -1
+  }
+}
+
+function getCommand (input, channel, userLevel) {
   var returnObj = false
 
-  if (containsLocalCommand(input, channel, localCommandObject)) {
-    if ("#" + localCommandObject[input.command].channelName === channel) {
-      returnObj = localCommandObject[input.command]
+  var localCmdID = getLocalCommandID(input, channel, userLevel)
+  if (localCmdID !== -1) {
+    returnObj = localCommandObject[localCmdID]
+  } else {
+    var globalCmdID = getGlobalCommandID(input, channel, userLevel)
+    if (globalCmdID !== -1) {
+      returnObj = globalCommandObject[globalCmdID]
     }
-  } else if (containsGlobalCommand(input, channel, globalCommandObject)) {
-    returnObj = globalCommandObject[input.command]
   }
   return returnObj
 }

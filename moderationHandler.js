@@ -1,5 +1,6 @@
 const emojiReg = new RegExp("[\uD83C-\uDBFF\uDC00-\uDFFF]{2}", 'g')
-const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/|blood|feelsweirdman|nymn|RaccAttack", 'ig') // eslint-disable-line
+const brailleReg = new RegExp("[\u2800-\u28FF]", 'g')
+const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/|blood|feelsweirdman|nymn|RaccAttack|gift|#|enigma|cmonBruh|kkk|report", 'ig') // eslint-disable-line
 const request = require('request')
 
 module.exports = {
@@ -11,8 +12,14 @@ function handle (client, channel, userstate, message, userLevel) {
 
   let emojiCounter = emojiCount(message)
 
-  if (emojiCounter > 25) {
+  if (emojiCounter > 30) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "EmojiSpam",	"phrase": emojiCounter})
+  }
+
+  let brailleCounter = brailleCount(message)
+
+  if (brailleCounter > 65) {
+    modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "BrailleSpam",	"phrase": brailleCounter})
   }
 
   forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
@@ -24,6 +31,16 @@ function emojiCount (message) {
 
   if (emojiMatch !== null) {
     return emojiMatch.length
+  } else {
+    return 0
+  }
+}
+
+function brailleCount (message) {
+  let brailleMatch = message.match(brailleReg)
+
+  if (brailleMatch !== null) {
+    return brailleMatch.length
   } else {
     return 0
   }
@@ -113,6 +130,10 @@ function modAction (client, channel, username, message, userLevel, banphraseData
     console.log("👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆 👆")
 
     banphraseData.length = 1
-    //client.timeout(channel, username, banphraseData.length, "Matched banphrase: " + banphraseData.name)
+
+    if (["EmojiSpam", "BrailleSpam"].includes(banphraseData.name)) {
+      client.timeout(channel, username, banphraseData.length, "Matched banphrase: " + banphraseData.name)
+    }
+
   }
 }

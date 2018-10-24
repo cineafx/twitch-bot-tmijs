@@ -155,7 +155,7 @@ function onResub (channel, username, months, message, userstate, methods) {
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " nymn1 nymnEZ nymn3 " + recipient)
+    sendMessage(this, channel, username, username + " nymnEZ nymn3 " + recipient)
   }
 }
 
