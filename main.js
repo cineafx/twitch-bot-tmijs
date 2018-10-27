@@ -10,8 +10,9 @@ const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
 //Message queue
 class QueueEmitter extends EventEmitter {}
-const queueEmitter = new QueueEmitter()
+global.queueEmitter = new QueueEmitter()
 global.messageQueue = []
+global.queueOverwrite = false;
 
 //regex
 const nlRegEx = new RegExp("{nl\\d*}", 'ig')
@@ -299,9 +300,10 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
     }, 1500)
   }
 
-  messageQueue.push({checked: false, isBeingChecked: false, allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: returnMessage}})
-  queueEmitter.emit('event')
-
+  if (!queueOverwrite) {
+    messageQueue.push({checked: false, isBeingChecked: false, allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: returnMessage}})
+    queueEmitter.emit('event')
+  }
 }
 
 queueEmitter.on('event', function () {

@@ -12,13 +12,13 @@ function handle (client, channel, userstate, message, userLevel) {
 
   let emojiCounter = emojiCount(message)
 
-  if (emojiCounter > 30) {
+  if (emojiCounter > 30 && userLevel < 3) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "EmojiSpam",	"phrase": emojiCounter})
   }
 
   let brailleCounter = brailleCount(message)
 
-  if (brailleCounter > 65) {
+  if (brailleCounter > 65 && userLevel < 3) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "BrailleSpam",	"phrase": brailleCounter})
   }
 

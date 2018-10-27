@@ -1,4 +1,5 @@
 const parameterHandler = require(__dirname + '/parameterHandler.js')
+const request = require('request')
 var lastCommandUsage = {}
 
 module.exports = {
@@ -50,6 +51,19 @@ function handle (client, channel, userstate, message, userLevel) {
   /* query */
   if (userLevel === 4 && input.command === "<query") {
     parameterHandler.wolframAlphaApi({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, input: input})
+  }
+
+  /* batchSay */
+  if (userLevel === 4 && input.command === "<batchsay") {
+    returnMessage = "";
+    let batchUrl = input.firstParameter
+    request({
+      url: batchUrl,
+      method: "GET"
+    }, function (err, res, body) {
+      let messageArray = body.split(/(?:\n|\r\n)+/g)
+      batchSay(client, channel, messageArray)
+    })
   }
 
   /* eval */
@@ -193,4 +207,53 @@ function pause (delay) {
   while ((Date.now() - t0) < delay) {
     (function () {})()
   }
+}
+
+async function batchSay(client, channel, messageArray){
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  console.log("Starting batchSay with " + messageArray.length + " lines");
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  var startTime = process.uptime()
+
+  queueOverwrite = true
+  var messagesPerChunk = 80
+  var delayBetweenChunks = 30
+
+  for (var i = 0; i < messageArray.length; i++) {
+
+    client.say(channel, messageArray[i])
+
+    if (i !== 0 && i % messagesPerChunk === 0) {
+      console.log("-----------------------------------------------------------")
+      console.log("-----------------------------------------------------------")
+      console.log("Ran " + i + "/" + messageArray.length + " lines.");
+      console.log("Took " + ((process.uptime() - startTime)/1000) + " seconds so far")
+      console.log("-----------------------------------------------------------")
+      console.log("-----------------------------------------------------------")
+      await new Promise (resolve => {
+        setTimeout(resolve, delayBetweenChunks * 1000)
+      })
+    }
+  }
+
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  console.log("Ran " + messageArray.length + " lines.");
+  console.log("Took " + ((process.uptime() - startTime)/1000) + " seconds");
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  console.log("Starting cooldown!");
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  await new Promise (resolve => {
+    setTimeout(resolve, delayBetweenChunks * 1000)
+  })
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  console.log("Cooldown over");
+  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------");
+  queueOverwrite = false
 }
