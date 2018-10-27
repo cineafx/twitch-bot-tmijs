@@ -53,6 +53,24 @@ function handle (client, channel, userstate, message, userLevel) {
     parameterHandler.wolframAlphaApi({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, input: input})
   }
 
+  /* nuke */
+  if (userLevel === 2 && input.command === "<nuke" && channel === "#theonemanny") {
+    returnMessage = "";
+    let batchUrl = "https://thonkbot.aidenwallis.co.uk/theonemanny/search?q=" + encodeURIComponent(input.firstParameter) + "&mins=" + encodeURIComponent(input.secondParameter) || 5
+    request({
+      url: batchUrl,
+      method: "GET"
+    }, function (err, res, body) {
+      let messageArray = body.split(/(?:\n|\r\n)+/g)
+
+      for (var i = 0; i < messageArray.length; i++) {
+        messageArray[i] = ".timeout " + messageArray[i] + " " + input.thirdParameter || 1 + " Nuked with phrase: " + input.firstParameter
+      }
+
+      batchSay(client, channel, messageArray)
+    })
+  }
+
   /* batchSay */
   if (userLevel === 4 && input.command === "<batchsay") {
     returnMessage = "";
@@ -197,6 +215,8 @@ function splitInput (input) {
 
   output.command = split[0].toLowerCase() || null
   output.firstParameter = split[1] || null
+  output.secondParameter = split[2] || null
+  output.thirdParameter = split[3] || null
   output.allParameter = split.slice(1).join(" ") || null
 
   return output
@@ -210,21 +230,21 @@ function pause (delay) {
 }
 
 async function batchSay(client, channel, messageArray){
+  if (queueOverwrite) {
+    return false
+  }
+
   console.log("-----------------------------------------------------------");
   console.log("-----------------------------------------------------------");
   console.log("Starting batchSay with " + messageArray.length + " lines");
   console.log("-----------------------------------------------------------");
   console.log("-----------------------------------------------------------");
   var startTime = process.uptime()
-
   queueOverwrite = true
   var messagesPerChunk = 80
   var delayBetweenChunks = 30
-
   for (var i = 0; i < messageArray.length; i++) {
-
     client.say(channel, messageArray[i])
-
     if (i !== 0 && i % messagesPerChunk === 0) {
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
