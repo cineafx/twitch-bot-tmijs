@@ -55,7 +55,7 @@ function handle (client, channel, userstate, message, userLevel) {
 
   /* nuke */
   if (userLevel === 2 && input.command === "<nuke" && channel === "#theonemanny") {
-    returnMessage = "";
+    returnMessage = ""
     let batchUrl = "https://thonkbot.aidenwallis.co.uk/theonemanny/search?q=" + encodeURIComponent(input.firstParameter) + "&mins=" + encodeURIComponent(input.secondParameter) || 5
     request({
       url: batchUrl,
@@ -73,7 +73,7 @@ function handle (client, channel, userstate, message, userLevel) {
 
   /* batchSay */
   if (userLevel === 4 && input.command === "<batchsay") {
-    returnMessage = "";
+    returnMessage = ""
     let batchUrl = input.firstParameter
     request({
       url: batchUrl,
@@ -234,11 +234,11 @@ async function batchSay(client, channel, messageArray){
     return false
   }
 
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
-  console.log("Starting batchSay with " + messageArray.length + " lines.");
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("Starting batchSay with " + messageArray.length + " lines.")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
   var startTime = process.uptime()
   queueOverwrite = true
   var messagesPerChunk = 80
@@ -248,7 +248,7 @@ async function batchSay(client, channel, messageArray){
     if (i !== 0 && i % messagesPerChunk === 0) {
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
-      console.log("Ran " + i + "/" + messageArray.length + " lines.");
+      console.log("Ran " + i + "/" + messageArray.length + " lines.")
       console.log("Took " + ((process.uptime() - startTime)/1000) + " seconds so far.")
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
@@ -258,22 +258,22 @@ async function batchSay(client, channel, messageArray){
     }
   }
 
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
-  console.log("Ran " + messageArray.length + " lines.");
-  console.log("Took " + ((process.uptime() - startTime)/1000) + " seconds.");
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
-  console.log("Starting cooldown!");
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("Ran " + messageArray.length + " lines.")
+  console.log("Took " + ((process.uptime() - startTime)/1000) + " seconds.")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("Starting cooldown!")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
   await new Promise (resolve => {
     setTimeout(resolve, delayBetweenChunks * 1000)
   })
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
-  console.log("Cooldown over");
-  console.log("-----------------------------------------------------------");
-  console.log("-----------------------------------------------------------");
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
+  console.log("Cooldown over")
+  console.log("-----------------------------------------------------------")
+  console.log("-----------------------------------------------------------")
   queueOverwrite = false
 }

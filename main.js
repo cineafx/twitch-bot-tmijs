@@ -10,9 +10,9 @@ const clientOverwrite = require(__dirname + '/clientOverwrite.js')
 
 //Message queue
 class QueueEmitter extends EventEmitter {}
-global.queueEmitter = new QueueEmitter()
+const queueEmitter = new QueueEmitter()
 global.messageQueue = []
-global.queueOverwrite = false;
+global.queueOverwrite = false
 
 //regex
 const nlRegEx = new RegExp("{nl\\d*}", 'ig')
