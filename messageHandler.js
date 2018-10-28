@@ -54,21 +54,39 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* nuke */
-  if (userLevel === 2 && input.command === "<nuke" && channel === "#theonemanny") {
+  if (userLevel > 2 && input.command === "<nuke") {
     returnMessage = ""
-    let batchUrl = "https://thonkbot.aidenwallis.co.uk/theonemanny/search?q=" + encodeURIComponent(input.firstParameter) + "&mins=" + encodeURIComponent(input.secondParameter) || 5
-    request({
-      url: batchUrl,
-      method: "GET"
-    }, function (err, res, body) {
-      let messageArray = body.split(/(?:\n|\r\n)+/g)
 
-      for (var i = 0; i < messageArray.length; i++) {
-        messageArray[i] = ".timeout " + messageArray[i] + " " + input.thirdParameter || 1 + " Nuked with phrase: " + input.firstParameter
+    let searchTerm = input.firstParameter
+    let searchTime = input.secondParameter || 60
+    let timeoutLength = input.thirdParameter || 1
+
+    if (searchTerm && !isNaN(searchTime)) {
+
+      let inputReg = searchTerm.match(new RegExp(/(?:^\/)(.*)(?:\/[gimuy]*$)/))
+      if (inputReg && inputReg.length > 0) {
+        searchTerm = inputReg[1]
       }
+      searchTerm = new RegExp(searchTerm,"gi")
 
-      batchSay(client, channel, messageArray)
-    })
+      mysqlConnection.query(
+        "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
+        [channels[channel].ID, searchTime],
+        function (err, results, fields) {
+          let messageArray = []
+          results.forEach( function (element) {
+            if (element.userLevel < 2 && element.message.match(searchTerm)) {
+              let tString = ".timeout " + element.username + " " + timeoutLength + " Nuked with: " + searchTerm.toString()
+              if (!messageArray.includes(tString)) {
+                messageArray.push(tString)
+              }
+            }
+          })
+          messageArray.push("Nuked " + messageArray.length + " people with: " + searchTerm.toString())
+          batchSay(client, channel, messageArray)
+        }
+      )
+    }
   }
 
   /* batchSay */

@@ -421,11 +421,15 @@ global.timeStamp = function () {
 }
 
 function messageLog (client, channel, username, message, userLevel) {
-  /*
+
   mysqlConnection.execute(
     "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
     [client.getUsername(), channels[channel].ID, username, message, userLevel]
   )
-  */
+
+  mysqlConnection.execute(
+    "DELETE FROM IceCreamDataBase.messageLog WHERE TIMESTAMPDIFF(MINUTE,`timestamp`,CURRENT_TIMESTAMP()) > 60;"
+  )
+
   console.log(timeStamp() + " " + channel + " " + username + ": " + message)
 }
