@@ -61,7 +61,7 @@ function handle (client, channel, userstate, message, userLevel) {
     let searchTime = input.secondParameter || 60
     let timeoutLength = input.thirdParameter || 1
 
-    if (searchTerm && !isNaN(searchTime)) {
+    if (searchTerm && !isNaN(searchTime) && timeoutLength > 0) {
 
       let inputReg = searchTerm.match(new RegExp(/(?:^\/)(.*)(?:\/[gimuy]*$)/))
       if (inputReg && inputReg.length > 0) {
