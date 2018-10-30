@@ -92,7 +92,7 @@ function handle (client, channel, userstate, message, userLevel) {
               }
             })
             messageArray.push("Nuked " + messageArray.length + " people with: " + searchTerm.toString())
-            //batchSay(client, channel, messageArray)
+            batchSay(client, channel, messageArray)
           }
         )
       }
