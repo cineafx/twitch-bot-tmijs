@@ -1,5 +1,8 @@
 const parameterHandler = require(__dirname + '/parameterHandler.js')
 const request = require('request')
+const splitTime = new RegExp(/(\d+)([smhd])?/,"i")
+const nukeRegGetParameter = new RegExp(/(.+?)(?: (\d+[smhd]?))?(?: (\d+[smhd]?))?$/,"i")
+const nukeRegIsReg = new RegExp(/(?:^\/)(.*)(?:\/[gimuy]*$)/)
 var lastCommandUsage = {}
 
 module.exports = {
@@ -57,35 +60,42 @@ function handle (client, channel, userstate, message, userLevel) {
   if (userLevel > 2 && input.command === "<nuke") {
     returnMessage = ""
 
-    let searchTerm = input.firstParameter
-    let searchTime = input.secondParameter || 60
-    let timeoutLength = input.thirdParameter || 1
+    if (input.allParameter !== null) {
+      let parameter = input.allParameter.match(nukeRegGetParameter)
 
-    if (searchTerm && !isNaN(searchTime) && timeoutLength > 0) {
+      let searchTerm = parameter[1]
+      let searchTime = parameter[2] || "1m"
+      let timeoutLength = parameter[3] || "1s"
 
-      let inputReg = searchTerm.match(new RegExp(/(?:^\/)(.*)(?:\/[gimuy]*$)/))
-      if (inputReg && inputReg.length > 0) {
-        searchTerm = inputReg[1]
-      }
-      searchTerm = new RegExp(searchTerm,"gi")
+      searchTime = stringTimeToSeconds(searchTime)
+      timeoutLength = stringTimeToSeconds(timeoutLength)
 
-      mysqlConnection.query(
-        "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
-        [channels[channel].ID, searchTime],
-        function (err, results, fields) {
-          let messageArray = []
-          results.forEach( function (element) {
-            if (element.userLevel < 2 && element.message.match(searchTerm)) {
-              let tString = ".timeout " + element.username + " " + timeoutLength + " Nuked with: " + searchTerm.toString()
-              if (!messageArray.includes(tString)) {
-                messageArray.push(tString)
-              }
-            }
-          })
-          messageArray.push("Nuked " + messageArray.length + " people with: " + searchTerm.toString())
-          batchSay(client, channel, messageArray)
+      if (searchTerm && !isNaN(searchTime) && timeoutLength > 0) {
+
+        let inputReg = searchTerm.match(nukeRegIsReg)
+        if (inputReg && inputReg.length > 0) {
+          searchTerm = inputReg[1]
         }
-      )
+        searchTerm = new RegExp(searchTerm,"gi")
+
+        mysqlConnection.query(
+          "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
+          [channels[channel].ID, searchTime],
+          function (err, results, fields) {
+            let messageArray = []
+            results.forEach( function (element) {
+              if (element.userLevel < 2 && element.message.match(searchTerm)) {
+                let tString = ".timeout " + element.username + " " + timeoutLength + " Nuked with: " + searchTerm.toString()
+                if (!messageArray.includes(tString)) {
+                  messageArray.push(tString)
+                }
+              }
+            })
+            messageArray.push("Nuked " + messageArray.length + " people with: " + searchTerm.toString())
+            //batchSay(client, channel, messageArray)
+          }
+        )
+      }
     }
   }
 
@@ -294,4 +304,28 @@ async function batchSay(client, channel, messageArray){
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   queueOverwrite = false
+}
+
+function stringTimeToSeconds(input) {
+  let split = input.match(splitTime)
+  let number = split[1] || 1
+  let unit = split[2] || "m"
+  let multiplier = 1
+
+  switch (unit) {
+    case "d":
+      multiplier = 86400
+      break;
+    case "h":
+      multiplier = 3600
+      break;
+    case "m":
+      multiplier = 60
+      break;
+  }
+  if (!isNaN(number) ) {
+    return number * multiplier
+  } else {
+    return -1
+  }
 }
