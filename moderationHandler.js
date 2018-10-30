@@ -1,6 +1,6 @@
 const emojiReg = new RegExp("[\uD83C-\uDBFF\uDC00-\uDFFF]{2}", 'g')
 const brailleReg = new RegExp("[\u2800-\u28FF]", 'g')
-const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/|blood|feelsweirdman|nymn|RaccAttack|gift|#|enigma|cmonBruh|kkk|report", 'ig') // eslint-disable-line
+const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|poggers|hypers|pogu|ResidentSleeper|twitch\.tv\/|blood|feelsweirdman|nymn|RaccAttack|gift|#|enigma|cmonBruh|kkk|report||doki", 'ig') // eslint-disable-line
 const request = require('request')
 
 module.exports = {
