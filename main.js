@@ -153,7 +153,6 @@ function onResub (channel, username, months, message, userstate, methods) {
 
     } else {
       sendMessage(this, channel, username, "nanSled nanRein nanRein nanRein nanPupolf  " + username + " resubbed for " + months + " " + timeunit)
-      //sendMessage(this, channel, username, "nan3 nan4 GuitarTime")
     }
   }
 }
