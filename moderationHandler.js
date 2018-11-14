@@ -1,5 +1,6 @@
 const emojiReg = new RegExp("[\uD83C-\uDBFF\uDC00-\uDFFF]{2}", 'g')
 const brailleReg = new RegExp("[\u2800-\u28FF]", 'g')
+const cyrillicPattern = new RegExp(/[\u0400-\u04FF]/, 'g')
 const noneForsenApiReg = new RegExp("poggers|hypers|ResidentSleeper|pogu|twitch\.tv\/|blood|feelsweirdman|nymn|RaccAttack|gift|#|enigma|cmonBruh|kkk|report|doki|hahaa|worgen|ñ|pump", 'ig') // eslint-disable-line
 const request = require('request')
 
@@ -20,6 +21,10 @@ function handle (client, channel, userstate, message, userLevel) {
 
   if (brailleCounter > 65 && userLevel < 3) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "BrailleSpam",	"phrase": brailleCounter})
+  }
+
+  if (cyrillicPattern.test(message)) {
+    modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "Cyrillic letters",	"phrase": message.match(cyrillicPattern)[0]})
   }
 
   forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)

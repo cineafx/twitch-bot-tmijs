@@ -1,7 +1,7 @@
 const parameterHandler = require(__dirname + '/parameterHandler.js')
 const request = require('request')
-const splitTime = new RegExp(/(\d+)([smhd])?/,"i")
-const nukeRegGetParameter = new RegExp(/(.+?)(?: (\d+[smhd]?))?(?: (\d+[smhd]?))?$/,"i")
+const splitTime = new RegExp(/(\d+)([smhd])?/, "i")
+const nukeRegGetParameter = new RegExp(/(.+?)(?: (\d+[smhd]?))?(?: (\d+[smhd]?))?$/, "i")
 const nukeRegIsReg = new RegExp(/(?:^\/)(.*)(?:\/[gimuy]*$)/)
 var lastCommandUsage = {}
 
@@ -76,7 +76,7 @@ function handle (client, channel, userstate, message, userLevel) {
         if (inputReg && inputReg.length > 0) {
           searchTerm = inputReg[1]
         }
-        searchTerm = new RegExp(searchTerm,"gi")
+        searchTerm = new RegExp(searchTerm, "gi")
 
         mysqlConnection.query(
           "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
@@ -257,7 +257,7 @@ function pause (delay) {
   }
 }
 
-async function batchSay(client, channel, messageArray){
+async function batchSay (client, channel, messageArray) {
   if (queueOverwrite) {
     return false
   }
@@ -277,10 +277,10 @@ async function batchSay(client, channel, messageArray){
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
       console.log("Ran " + i + "/" + messageArray.length + " lines.")
-      console.log("Took " + Math.floor((process.uptime() - startTime)*1000) + " seconds so far.")
+      console.log("Took " + Math.floor((process.uptime() - startTime) * 1000) + " seconds so far.")
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
-      await new Promise (resolve => {
+      await new Promise(resolve => {
         setTimeout(resolve, delayBetweenChunks * 1000)
       })
     }
@@ -289,13 +289,13 @@ async function batchSay(client, channel, messageArray){
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("Ran " + messageArray.length + " lines.")
-  console.log("Took " + Math.floor((process.uptime() - startTime)*1000) + " seconds.")
+  console.log("Took " + Math.floor((process.uptime() - startTime) * 1000) + " seconds.")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("Starting cooldown!")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
-  await new Promise (resolve => {
+  await new Promise(resolve => {
     setTimeout(resolve, delayBetweenChunks * 1000)
   })
   console.log("-----------------------------------------------------------")
@@ -306,7 +306,7 @@ async function batchSay(client, channel, messageArray){
   queueOverwrite = false
 }
 
-function stringTimeToSeconds(input) {
+function stringTimeToSeconds (input) {
   let split = input.match(splitTime)
   let number = split[1] || 1
   let unit = split[2] || "m"
@@ -315,13 +315,13 @@ function stringTimeToSeconds(input) {
   switch (unit) {
     case "d":
       multiplier = 86400
-      break;
+      break
     case "h":
       multiplier = 3600
-      break;
+      break
     case "m":
       multiplier = 60
-      break;
+      break
   }
   if (!isNaN(number) ) {
     return number * multiplier
