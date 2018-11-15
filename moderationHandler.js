@@ -27,7 +27,7 @@ function handle (client, channel, userstate, message, userLevel) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "Cyrillic letters",	"phrase": message.match(cyrillicPattern)[0]})
   }
 
-  forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
+  //forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
 
 }
 
