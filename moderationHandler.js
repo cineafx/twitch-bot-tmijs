@@ -13,13 +13,13 @@ function handle (client, channel, userstate, message, userLevel) {
 
   let emojiCounter = emojiCount(message)
 
-  if (emojiCounter > 30 && userLevel < 3) {
+  if (emojiCounter > 30 && userLevel < userLevels.MODERATOR) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "EmojiSpam",	"phrase": emojiCounter})
   }
 
   let brailleCounter = brailleCount(message)
 
-  if (brailleCounter > 65 && userLevel < 3) {
+  if (brailleCounter > 65 && userLevel < userLevels.MODERATOR) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "BrailleSpam",	"phrase": brailleCounter})
   }
 
@@ -52,7 +52,7 @@ function brailleCount (message) {
 }
 
 function forsenApiCallback (args) {
-  if (!args.allow && args.messageObj.userLevel < 2) {
+  if (!args.allow && args.messageObj.userLevel < userLevels.MODERATOR) {
     modAction(args.messageObj.client,
       args.messageObj.channel,
       args.messageObj.username,

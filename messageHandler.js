@@ -52,12 +52,12 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* query */
-  if (userLevel === 4 && input.command === "<query") {
+  if (userLevel === userLevels.BOTADMIN && input.command === "<query") {
     parameterHandler.wolframAlphaApi({client: client, message: returnMessage, returnType: returnType, userstate: userstate, channel: channel, input: input})
   }
 
   /* nuke */
-  if (userLevel > 2 && input.command === "<nuke") {
+  if (userLevel > userLevels.MODERATOR && input.command === "<nuke") {
     returnMessage = ""
 
     if (input.allParameter !== null) {
@@ -84,7 +84,7 @@ function handle (client, channel, userstate, message, userLevel) {
           function (err, results, fields) {
             let messageArray = []
             results.forEach( function (element) {
-              if (element.userLevel < 2 && element.message.match(searchTerm)) {
+              if (element.userLevel < userLevels.MODERATOR && element.message.match(searchTerm)) {
                 let tString = ".timeout " + element.username + " " + timeoutLength + " Nuked with: " + searchTerm.toString()
                 if (!messageArray.includes(tString)) {
                   messageArray.push(tString)
@@ -100,7 +100,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* batchSay */
-  if (userLevel === 4 && input.command === "<batchsay") {
+  if (userLevel === userLevels.BOTADMIN && input.command === "<batchsay") {
     returnMessage = ""
     let batchUrl = input.firstParameter
     request({
@@ -113,7 +113,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* eval */
-  if (userLevel === 4 && input.command === "<eval") {
+  if (userLevel === userLevels.BOTADMIN && input.command === "<eval") {
     try {
     returnMessage = eval(input.allParameter).toString()
     } catch (err) {
@@ -129,7 +129,7 @@ function handle (client, channel, userstate, message, userLevel) {
   }
 
   /* shutdown */
-  if (userLevel === 4 && ["<shutdown", "<sh", "<sd", "<restart", "<rs", "<reboot", "<rb"].includes(input.command)) {
+  if (userLevel === userLevels.BOTADMIN && ["<shutdown", "<sh", "<sd", "<restart", "<rs", "<reboot", "<rb"].includes(input.command)) {
     returnMessage = "Shutting down ..."
     returnType = "shutdown"
   }

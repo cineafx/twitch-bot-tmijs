@@ -18,6 +18,9 @@ global.queueOverwrite = false
 const nlRegEx = new RegExp("{nl\\d*}", 'ig')
 const delayRegEx = new RegExp("\\d*}", 'ig')
 
+//enums
+global.userLevels = Object.freeze({"DEFAULT": 0, "PLEB": 0, "USER": 0, "SUB": 1, "SUBSCRIBER": 1, "VIP": 2, "MOD": 3, "MODERATOR": 3, "BROADCASTER": 4, "BOTADMIN": 5})
+
 //other variables
 var pastMessages = []
 var addSpecialCharacter = {}
@@ -276,15 +279,17 @@ function checkGlobalTimeout () {
 }
 
 function getUserLevel (channel, userstate) {
-  var userLevel = 0
+  var userLevel = userLevels.PLEB
   if (options.clientoptions.admins.includes(userstate["user-id"])) {
-    userLevel = 4
+    userLevel = userLevels.BOTADMIN
   } else if (channel === '#' + userstate.username) {
-    userLevel = 3
+    userLevel = userLevels.BROADCASTER
   } else if (userstate.mod) {
-    userLevel = 2
+    userLevel = userLevels.MODERATOR
+  } else if (userstate.hasOwnProperty('badges') && userstate.hasOwnProperty('vip') && userstate.badges.vip === "1") {
+    userLevel = userLevels.VIP
   } else if (userstate.subscriber) {
-    userLevel = 1
+    userLevel = userLevels.SUBSCRIBER
   }
   return userLevel
 }
@@ -340,6 +345,7 @@ function updateMessageQueue (args) {
 
 function handleNewLine (client, channel, username, message) {
   if (nlRegEx.test(message)) {
+    //TODO: handle VIP
     let delay = !client.isMod(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
 
@@ -388,6 +394,7 @@ function sendMessage (client, channel, username, message) {
     var currentTimeMillis = new Date().getTime()
 
     //more than 1250ms since last message
+    //TODO: insert vip stuff in here:
     if (lastMessageTime + 1225 < currentTimeMillis || client.isMod(channel, client.getUsername())) {
       lastMessageTime = currentTimeMillis
 
