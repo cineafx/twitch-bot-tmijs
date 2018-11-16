@@ -162,13 +162,13 @@ function onResub (channel, username, months, message, userstate, methods) {
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " nymnEZ nymn3 " + recipient)
+    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + recipient)
   }
 }
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + sender)
+    sendMessage(this, channel, username, username + " sushiWOW " + sender)
   }
 }
 
