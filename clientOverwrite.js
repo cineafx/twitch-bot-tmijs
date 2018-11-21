@@ -1,3 +1,4 @@
+/* eslint-disable */
 var api = require("./node_modules/tmi.js/lib/api");
 var commands = require("./node_modules/tmi.js/lib/commands");
 var eventEmitter = require("./node_modules/tmi.js/lib/events").EventEmitter;
@@ -557,6 +558,25 @@ function handleMessage(message) {
                          this.emit("subgift", channel, username, recipient, {plan, planName}, userstate);
                     }
 
+                    else if (msgid == 'submysterygift') {
+                        var username = message.tags["display-name"] || message.tags["login"];
+                        var giftCount = message.tags["msg-param-mass-gift-count"];
+                        var senderCount = message.tags["msg-param-sender-count"];
+                        var plan = message.tags["msg-param-sub-plan"];
+                        var planName = _.replaceAll(_.get(message.tags["msg-param-sub-plan-name"], null), {
+                            "\\\\s": " ",
+                            "\\\\:": ";",
+                            "\\\\\\\\": "\\",
+                            "\\r": "\r",
+                            "\\n": "\n"
+                        });
+                        var userstate = message.tags;
+                         if (userstate) {
+                            userstate['message-type'] = 'subgift';
+                        }
+                         this.emit("submysterygift", channel, username, {plan, planName}, giftCount, senderCount, userstate);
+                    }
+
                     else if (msgid == 'giftpaidupgrade') {
                         var username = message.tags["display-name"] || message.tags["login"];
                         var sender = message.tags["msg-param-sender-name"] || message.tags["msg-param-sender-user-name"];
@@ -571,6 +591,11 @@ function handleMessage(message) {
                     }
 
                     /*
+
+                    @badges=subscriber/24,bits/10000;color=#003153;display-name=George;emotes=;id=f7c28d8b-7939-40a8-9a09-68037deafd3b;login=george;mod=0;msg-id=submysterygift;msg-param-mass-gift-count=2;msg-param-sender-count=13;msg-param-sub-plan=1000;room-id=12519;subscriber=1;system-msg=George\sis\sgifting\s2\sTier\s1\sSubs\sto\sBwana's\scommunity!\sThey've\sgifted\sa\stotal\sof\s13\sin\sthe\schannel!;tmi-sent-ts=1533764552435;turbo=0;user-id=13074;user-type= :tmi.twitch.tv USERNOTICE #bwana
+                    @badges=subscriber/24,bits/10000;color=#003153;display-name=George;emotes=;id=b297ee94-7cb8-4def-9984-c17f82805a1a;login=george;mod=0;msg-id=subgift;msg-param-months=2;msg-param-recipient-display-name=Fireman17;msg-param-recipient-id=39084634;msg-param-recipient-user-name=fireman17;msg-param-sender-count=0;msg-param-sub-plan-name=Channel\sSubscription\s(bwana);msg-param-sub-plan=1000;room-id=12519;subscriber=1;system-msg=George\sgifted\sa\sTier\s1\ssub\sto\sFireman17!;tmi-sent-ts=1533764553373;turbo=0;user-id=13074;user-type= :tmi.twitch.tv USERNOTICE #bwana
+                    @badges=subscriber/24,bits/10000;color=#003153;display-name=George;emotes=;id=ffef7029-23ed-4b5a-bf69-4a6e86af57c1;login=george;mod=0;msg-id=subgift;msg-param-months=2;msg-param-recipient-display-name=CptBlowUpDoll;msg-param-recipient-id=154238603;msg-param-recipient-user-name=cptblowupdoll;msg-param-sender-count=0;msg-param-sub-plan-name=Channel\sSubscription\s(bwana);msg-param-sub-plan=1000;room-id=12519;subscriber=1;system-msg=George\sgifted\sa\sTier\s1\ssub\sto\sCptBlowUpDoll!;tmi-sent-ts=1533764553430;turbo=0;user-id=13074;user-type= :tmi.twitch.tv USERNOTICE #bwana
+
                     {
                        "raw":"@badges=subscriber/0,premium/1;color=#008000;display-name=oldbooks;emotes=;id=89b8ed15-d662-4e0e-a744-3956db0c9769;login=oldbooks;mod=0;msg-id=giftpaidupgrade;msg-param-promo-gift-total=63523;msg-param-promo-name=Subtember;msg-param-sender-login=wetorp;msg-param-sender-name=Wetorp;room-id=43028909;subscriber=1;system-msg=oldbooks\\sis\\scontinuing\\sthe\\sGift\\sSub\\sthey\\sgot\\sfrom\\sWetorp!\\sThey're\\sone\\sof\\s63523\\sgift\\ssubs\\sto\\scontinue\\sthis\\sSubtember.;tmi-sent-ts=1536691366830;turbo=0;user-id=170192591;user-type= :tmi.twitch.tv USERNOTICE #fandy",
                        "tags":{

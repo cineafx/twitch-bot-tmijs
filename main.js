@@ -21,6 +21,8 @@ const delayRegEx = new RegExp("\\d*}", 'ig')
 //enums
 global.userLevels = Object.freeze({"DEFAULT": 0, "PLEB": 0, "USER": 0, "SUB": 1, "SUBSCRIBER": 1, "VIP": 2, "MOD": 3, "MODERATOR": 3, "BROADCASTER": 4, "BOTADMIN": 5})
 
+const timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
+
 //other variables
 var pastMessages = []
 var addSpecialCharacter = {}
@@ -76,6 +78,7 @@ if (options.clientoptions.dedicated.enabled) {
   clientDedicated.on("subscription", onSubscription)
   clientDedicated.on("resub", onResub)
   clientDedicated.on("subgift", onSubgift)
+  clientDedicated.on("submysterygift", onSubmysterygift)
   clientDedicated.on("giftpaidupgrade", onGiftpaidupgrade)
   clientDedicated.on("else", onElse)
 }
@@ -87,6 +90,7 @@ if (options.clientoptions.self.enabled) {
   clientSelf.on("subscription", onSubscription)
   clientSelf.on("resub", onResub)
   clientSelf.on("subgift", onSubgift)
+  clientSelf.on("submysterygift", onSubmysterygift)
   clientSelf.on("giftpaidupgrade", onGiftpaidupgrade)
   clientSelf.on("else", onElse)
 }
@@ -117,38 +121,48 @@ function onConnect (address, port) {
 }
 
 function onChat (channel, userstate, message, self) {
-  if (!channels[channel.toLowerCase()].useCommands) { return }
-
   let userLevel = getUserLevel(channel, userstate)
-
-  messageLog(this, channel, userstate.username, message, userLevel)
-
   if (channels[channel.toLowerCase()].shouldModerate) {
     moderationHandler.handle(this, channel, userstate, message, userLevel)
   }
 
+  if (!channels[channel.toLowerCase()].useCommands) { return }
+  messageLog(this, channel, userstate.username, message, userLevel, channels[channel.toLowerCase()].shouldModerate)
   messageHandler.handle(this, channel, userstate, message, userLevel)
 }
 
 function onSubscription (channel, username, methods, message, userstate) {
-  //{"prime":true,"plan":"Prime","planName":"Channel Subscription (forsenlol)"}
-  //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
-  //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
+  let data = {channel: channel, username: username}
+  let announcementMessage = methodToMessage(channel, methods)
+  if (announcementMessage) {
+    announcementMessage = notificationParameter(announcementMessage, data)
+    customLog(announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+  }
+
 
   if (channel === "#theonemanny") {
     if (methods.plan.trim() === "Prime") {
       sendMessage(this, channel, username, "forsenPrime Clap " + username)
     } else {
-      sendMessage(this, channel, username, "forsen1 forsen2 " + username)
-      sendMessage(this, channel, username, "forsen3 forsen4 Clap")
+      sendMessage(this, channel, username, "pupper1 pupper2 " + username)
+      sendMessage(this, channel, username, "pupper3 pupper4 Clap")
     }
   }
 }
 
 function onResub (channel, username, months, message, userstate, methods) {
+  let data = {channel: channel, username: username, months: months}
+  let announcementMessage = methodToMessage(channel, methods)
+  if (announcementMessage) {
+    announcementMessage = notificationParameter(announcementMessage, data)
+    customLog(announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+  }
+
+
   if (channel === "#theonemanny") {
 
-    let timeunits = ["nanoseconds", "microseconds", "milliseconds", "seconds", "minutes", "hours", "decades", "centuries", "millennia"]
     let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
 
     if (methods.plan.trim() === "Prime") {
@@ -161,30 +175,56 @@ function onResub (channel, username, months, message, userstate, methods) {
 }
 
 function onSubgift (channel, username, recipient, method, message, userstate) {
+  let data = {channel: channel, username: username, recipient: recipient}
+  let announcementMessage = methodToMessage(channel, methods)
+  if (announcementMessage) {
+    announcementMessage = notificationParameter(announcementMessage, data)
+    customLog(announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+  }
+
   if (channel === "#theonemanny") {
     sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + recipient)
   }
 }
 
+function onSubmysterygift (channel, username, method, message, giftCount, senderCount, userstate) {
+  giftCount = parseInt(giftCount)
+  senderCount = parse(senderCount)
+
+  let data = {channel: channel, username: username, giftCount: giftCount, senderCount: senderCount}
+  let announcementMessage = methodToMessage(channel, methods)
+  if (announcementMessage) {
+    announcementMessage = notificationParameter(announcementMessage, data)
+    customLog(announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+  }
+
+  if (channel === "#theonemanny") {
+    if (giftCount === 1) {
+      sendMessage(this, channel, username, username + " gifted " + giftCount + " sub! Pogchamp")
+    } else {
+      sendMessage(this, channel, username, username + " gifted " + giftCount + " subs! Pogchamp")
+    }
+  }
+}
+
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
+  let data = {channel: channel, username: username, sender: sender}
+  let announcementMessage = methodToMessage(channel, methods)
+  if (announcementMessage) {
+    announcementMessage = notificationParameter(announcementMessage, data)
+    customLog(announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+  }
+
   if (channel === "#theonemanny") {
     sendMessage(this, channel, username, username + " sushiWOW " + sender)
   }
 }
 
 function onElse (message) {
-  return
-  /*
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log(JSON.stringify(message))
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  console.log("-----------------------------------------------------------")
-  */
+  customLog("Else: " + message)
 }
 
 /* -------------------------------------------------- */
@@ -192,6 +232,59 @@ function onElse (message) {
 /* ---------------- OTHER FUNCTIONS ----------------- */
 /* -------------------------------------------------- */
 /* -------------------------------------------------- */
+
+function methodToMessage (channel, methods) {
+  //{"prime":true,"plan":"Prime","planName":"Channel Subscription (forsenlol)"}
+  //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
+  //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
+
+  let subT1 = channels[channel].subT1 || null
+  let subT2 = channels[channel].subT2 || subT1
+  let subT3 = channels[channel].subT3 || subT2
+  let subPrime = channels[channel].subPrime || null
+  let announcementMessage = ""
+
+  switch (methods.plan) {
+    case "Prime":
+      announcementMessage = subPrime
+      break
+    case "1000":
+      announcementMessage = subT1
+      break
+    case "2000":
+      announcementMessage = subT2
+      break
+    case "3000":
+      announcementMessage = subT3
+      break
+  }
+  //announcementMessage = "${channel} ${user} ${secondUser} ${months} ${giftCount} ${senderCount} ${timeunit} ${extraS}" // DEBUG: remove this
+  return announcementMessage
+}
+
+function notificationParameter (message, data) {
+  customLog(JSON.stringify(data))
+
+  let channel = data.channel.substring(1) || null
+  let username = data.username || null
+  let secondUser = data.recipient || data.sender || null
+  let months = data.months || 0
+  let giftCount = data.giftCount || 0
+  let senderCount = data.senderCount || 0
+  let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
+  let extraS = months === 1 ? "" : "s"
+
+  message = message.replace(new RegExp("\\${channel}", 'g'), channel)
+  message = message.replace(new RegExp("\\${user}", 'g'), username)
+  message = message.replace(new RegExp("\\${secondUser}", 'g'), secondUser)
+  message = message.replace(new RegExp("\\${months}", 'g'), months)
+  message = message.replace(new RegExp("\\${giftCount}", 'g'), giftCount)
+  message = message.replace(new RegExp("\\${senderCount}", 'g'), senderCount)
+  message = message.replace(new RegExp("\\${timeunit}", 'g'), timeunit)
+  message = message.replace(new RegExp("\\${extraS}", 'g'), extraS)
+
+  return message
+}
 
 function updateChatters () {
   for (var channelKey in channels) {
@@ -218,7 +311,7 @@ function updateChatters () {
 function updateChannels () {
 
   mysqlConnection.query(
-    "SELECT * FROM channels",
+    "SELECT * FROM channels LEFT JOIN notifications ON ID = channelID;",
     function (err, results, fields) {
       //clears old channels array
       channels = {}
@@ -426,16 +519,27 @@ global.timeStamp = function () {
   return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
 }
 
-function messageLog (client, channel, username, message, userLevel) {
+function messageLog (client, channel, username, message, userLevel, shouldModerate) {
 
-  mysqlConnection.execute(
-    "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
-    [client.getUsername(), channels[channel].ID, username, message, userLevel]
-  )
+  if (shouldModerate) {
+    mysqlConnection.execute(
+      "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
+      [client.getUsername(), channels[channel].ID, username, message, userLevel]
+    )
 
-  mysqlConnection.execute(
-    "DELETE FROM IceCreamDataBase.messageLog WHERE TIMESTAMPDIFF(MINUTE,`timestamp`,CURRENT_TIMESTAMP()) > 60;"
-  )
+    mysqlConnection.execute(
+      "DELETE FROM IceCreamDataBase.messageLog WHERE TIMESTAMPDIFF(MINUTE,`timestamp`,CURRENT_TIMESTAMP()) > 60;"
+    )
+  }
 
   console.log(timeStamp() + " " + channel + " " + username + ": " + message)
+}
+
+function customLog (message) {
+  mysqlConnection.execute(
+    "INSERT INTO customLog (message) VALUES (?);",
+    [message]
+  )
+
+  console.log("--- " + timeStamp() + " " + message)
 }
