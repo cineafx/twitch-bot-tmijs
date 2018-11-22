@@ -639,7 +639,7 @@ function handleMessage(message) {
                     */
 
                     else {
-                        this.emit("else", message)
+                        this.emit("else", channel,  message)
                     }
                     /* CUSTOM END */
                     break;

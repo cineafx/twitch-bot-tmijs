@@ -133,6 +133,7 @@ function onChat (channel, userstate, message, self) {
 
 function onSubscription (channel, username, methods, message, userstate) {
   let data = {channel: channel, username: username}
+  methods.type = "sub"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
@@ -153,6 +154,7 @@ function onSubscription (channel, username, methods, message, userstate) {
 
 function onResub (channel, username, months, message, userstate, methods) {
   let data = {channel: channel, username: username, months: months}
+  methods.type = "resub"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
@@ -174,8 +176,9 @@ function onResub (channel, username, months, message, userstate, methods) {
   }
 }
 
-function onSubgift (channel, username, recipient, method, message, userstate) {
+function onSubgift (channel, username, recipient, methods, message, userstate) {
   let data = {channel: channel, username: username, recipient: recipient}
+  methods.type = "subGift"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
@@ -193,6 +196,7 @@ function onSubmysterygift (channel, username, method, message, giftCount, sender
   senderCount = parse(senderCount)
 
   let data = {channel: channel, username: username, giftCount: giftCount, senderCount: senderCount}
+  methods.type = "subMysteryGift"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
@@ -211,6 +215,7 @@ function onSubmysterygift (channel, username, method, message, giftCount, sender
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   let data = {channel: channel, username: username, sender: sender}
+  methods.type = "giftPaidUpgrade"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
@@ -223,8 +228,8 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   }
 }
 
-function onElse (message) {
-  customLog("Else: " + message)
+function onElse (channel, message) {
+  customLog("Else: " + channel + ": " + JSON.stringify(message))
 }
 
 /* -------------------------------------------------- */
@@ -238,27 +243,49 @@ function methodToMessage (channel, methods) {
   //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
   //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
 
-  let subT1 = channels[channel].subT1 || null
-  let subT2 = channels[channel].subT2 || subT1
-  let subT3 = channels[channel].subT3 || subT2
-  let subPrime = channels[channel].subPrime || null
   let announcementMessage = ""
 
-  switch (methods.plan) {
-    case "Prime":
-      announcementMessage = subPrime
-      break
-    case "1000":
-      announcementMessage = subT1
-      break
-    case "2000":
-      announcementMessage = subT2
-      break
-    case "3000":
-      announcementMessage = subT3
-      break
+  // TODO: detect resub / subgift / etc...
+  methods.type
+  "sub"
+  "resub"
+  "subGift"
+  "subMysteryGift"
+  "giftPaidUpgrade"
+
+
+
+
+
+  if (methods.type === "sub" || methods.type === "resub") {
+    let plans = ["Prime", "1000", "2000", "3000"]
+    let planMsgs = new Array(4).fill(null)
+
+    if (methods.type === "sub") {
+      let subPrime = channels[channel].subPrime || null
+      let subT1 = channels[channel].subT1 || null
+      let subT2 = channels[channel].subT2 || subT1
+      let subT3 = channels[channel].subT3 || subT2
+      planMsgs = [subPrime, subT1, subT2, subT3]
+    } else {
+      let resubPrime = channels[channel].resubPrime || null
+      let resubT1 = channels[channel].resubT1 || null
+      let resubT2 = channels[channel].resubT2 || resubT1
+      let resubT3 = channels[channel].resubT3 || resubT2
+      planMsgs = [resubPrime, resubT1, resubT2, resubT3]
+    }
+    announcementMessage = planMsgs[plans.indexOf(methods.plan)]
+
+  } else if (methods.type === "subGift") {
+    announcementMessage = channels[channel].subGift || null
+
+  } else if (methods.type === "subMysteryGift") {
+    announcementMessage = channels[channel].subMysteryGift || null
+
+  } else if (methods.type === "giftPaidUpgrade") {
+    announcementMessage = channels[channel].giftPaidUpgrade || null
   }
-  //announcementMessage = "${channel} ${user} ${secondUser} ${months} ${giftCount} ${senderCount} ${timeunit} ${extraS}" // DEBUG: remove this
+
   return announcementMessage
 }
 
