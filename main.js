@@ -84,18 +84,24 @@ function onConnect (address, port) {
   if (firstConnect) {
     firstConnect = false
 
-    if (this === clientDedicated) {
-      setTimeout(function () { updateChannels() }, 1000)
-    } else {
-      setTimeout(function () { updateChannels() }, 100)
-    }
-    setInterval(function () { updateChannels() }, 60000)
+    updateChannels().then(()=>{
+      /*if (options.clientoptions.dedicated.enabled) {
+        clientDedicated.say("#" + clientDedicated.getUsername(), "Successfully connected to " + clientDedicated.getChannels().length + " channels.")
+      }
+      if (options.clientoptions.self.enabled) {
+        clientSelf.say("#" + clientSelf.getUsername(), "Successfully connected to " + clientSelf.getChannels().length + " channels.")
+      }*/
+      setInterval(updateChannels, 60000)
 
-    messageHandler.updateCommandObjects()
-    setInterval(function () { messageHandler.updateCommandObjects() }, 60000)
+      messageHandler.updateCommandObjects()
+      setInterval( messageHandler.updateCommandObjects, 60000)
 
-    setTimeout(function () { updateChatters() }, 2000)
-    setInterval(function () { updateChatters() }, 30000)
+      updateChatters()
+      setInterval(updateChatters, 30000)
+    }, (reason)=>{
+      console.error(Error(reason))
+      process.exit()
+    })
   }
 }
 
@@ -145,7 +151,7 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
 
 function onSubmysterygift (channel, username, method, message, giftCount, senderCount, userstate) {
   giftCount = parseInt(giftCount)
-  senderCount = parse(senderCount)
+  senderCount = parseInt(senderCount)
 
   let data = {channel: channel, username: username, giftCount: giftCount, senderCount: senderCount}
   methods.type = "subMysteryGift"
@@ -277,49 +283,48 @@ async function updateChatters () {
 
 async function updateChannels () {
 
-  mysqlConnection.query(
-    "SELECT * FROM channels LEFT JOIN notifications ON ID = channelID;",
-    function (err, results, fields) {
-      //clears old channels array
-      channels = {}
-      //fill channel array
-      results.forEach( function (element) {
-        element.channelName = "#" + element.channelName.trim().toLowerCase()
-        channels[element.channelName] = element
-      })
+  let results = await mysqlConnection.query(
+    "SELECT * FROM channels LEFT JOIN notifications ON ID = channelID;")
+  //clears old channels array
+  channels = {}
+  //fill channel array
+  results.forEach( function (element) {
+    element.channelName = "#" + element.channelName.trim().toLowerCase()
+    channels[element.channelName] = element
+  })
 
-      //remove
-      clientDedicated.getChannels().forEach( function (element) {
-        if (!(Object.keys(channels).includes(element) && channels[element].dedicated)) {
-          clientDedicated.part(element)
-          console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
-        }
-      })
-      clientSelf.getChannels().forEach( function (element) {
-        if (!(Object.keys(channels).includes(element) && channels[element].self)) {
-          clientSelf.part(element)
-          console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
-        }
-      })
-
-      //add
-      Object.keys(channels).forEach( function (channel) {
-        channel = channels[channel]
-        if (channel.dedicated) {
-          if (!clientDedicated.getChannels().includes(channel.channelName)) {
-            clientDedicated.join(channel.channelName)
-            console.log(timeStamp() + " " + clientDedicated.getUsername() + " JOINING: " + channel.channelName)
-          }
-        }
-        if (channel.self) {
-          if (!clientSelf.getChannels().includes(channel.channelName)) {
-            clientSelf.join(channel.channelName)
-            console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)
-          }
-        }
-      })
+  //remove
+  clientDedicated.getChannels().forEach( function (element) {
+    if (!(Object.keys(channels).includes(element) && channels[element].dedicated)) {
+      clientDedicated.part(element)
+      console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
     }
-  )
+  })
+  clientSelf.getChannels().forEach( function (element) {
+    if (!(Object.keys(channels).includes(element) && channels[element].self)) {
+      clientSelf.part(element)
+      console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
+    }
+  })
+
+  //add
+  for (channel of Object.keys(channels)) {
+    channel = channels[channel]
+    if (channel.dedicated) {
+      if (!clientDedicated.getChannels().includes(channel.channelName)) {
+        clientDedicated.join(channel.channelName)
+        console.log(timeStamp() + " " + clientDedicated.getUsername() + " JOINING: " + channel.channelName)
+      }
+    }
+    if (channel.self) {
+      if (!clientSelf.getChannels().includes(channel.channelName)) {
+        clientSelf.join(channel.channelName)
+        console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)
+      }
+    }
+    await (() => {return new Promise(resolve => setTimeout(resolve, 75))})()
+  }
+  return Promise.resolve(1)
 }
 
 async function cleanupGlobalTimeout () {
@@ -365,6 +370,9 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
   }
 
   if (!queueOverwrite) {
+    if (typeof userstate === "undefined") {
+      userstate = {username: ""}
+    }
     messageQueue.push({checked: false, isBeingChecked: false, allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: returnMessage}})
     queueEmitter.emit('event')
   }
