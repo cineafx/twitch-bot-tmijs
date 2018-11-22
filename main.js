@@ -1,5 +1,4 @@
 var tmi = require("tmi.js")
-const mysql = require('mysql2')
 const EventEmitter = require('events')
 const request = require('request')
 
@@ -7,6 +6,7 @@ const request = require('request')
 const messageHandler = require(__dirname + '/messageHandler.js')
 const moderationHandler = require(__dirname + '/moderationHandler.js')
 const clientOverwrite = require(__dirname + '/clientOverwrite.js')
+global.mysqlConnection = require(__dirname + '/sql.js')
 
 //Message queue
 class QueueEmitter extends EventEmitter {}
@@ -46,27 +46,6 @@ tmi.client.prototype.handleMessage = clientOverwrite.handleMessage
 //creating clients
 var clientDedicated = new tmi.client(options.clientoptions.dedicated)
 var clientSelf = new tmi.client(options.clientoptions.self)
-
-//cast bit(1) to boolean
-//https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm
-options.mysqloptions.typeCast = function castField ( field, useDefaultTypeCasting ) {
-  // We only want to cast bit fields that have a single-bit in them. If the field
-  // has more than one bit, then we cannot assume it is supposed to be a Boolean.
-  if ( ( field.type === "BIT" ) && ( field.length === 1 ) ) {
-    var bytes = field.buffer()
-    //Account for the (hopefully rare) case in which a BIT(1) field would be NULL
-    if (bytes === null) {
-      return null
-    }
-    // A Buffer in Node represents a collection of 8-bit unsigned integers.
-    // Therefore, our single "bit field" comes back as the bits '0000 0001',
-    // which is equivalent to the number 1.
-    return ( bytes[ 0 ] === 1 )
-  }
-  return ( useDefaultTypeCasting() )
-}
-
-global.mysqlConnection = mysql.createConnection(options.mysqloptions)
 
 // Connect the clients to the server..
 
@@ -138,17 +117,7 @@ function onSubscription (channel, username, methods, message, userstate) {
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog(announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
-  }
-
-
-  if (channel === "#theonemanny") {
-    if (methods.plan.trim() === "Prime") {
-      sendMessage(this, channel, username, "forsenPrime Clap " + username)
-    } else {
-      sendMessage(this, channel, username, "pupper1 pupper2 " + username)
-      sendMessage(this, channel, username, "pupper3 pupper4 Clap")
-    }
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -159,20 +128,7 @@ function onResub (channel, username, months, message, userstate, methods) {
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog(announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
-  }
-
-
-  if (channel === "#theonemanny") {
-
-    let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
-
-    if (methods.plan.trim() === "Prime") {
-        sendMessage(this, channel, username, "forsenPrime Clap " + username + " resubbed for " + months + " " + timeunit)
-
-    } else {
-      sendMessage(this, channel, username, "nanSled nanRein nanRein nanRein nanPupolf  " + username + " resubbed for " + months + " " + timeunit)
-    }
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -183,11 +139,7 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog(announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
-  }
-
-  if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " pupperAL pupperSmile pupperAR " + recipient)
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -201,15 +153,7 @@ function onSubmysterygift (channel, username, method, message, giftCount, sender
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog(announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
-  }
-
-  if (channel === "#theonemanny") {
-    if (giftCount === 1) {
-      sendMessage(this, channel, username, username + " gifted " + giftCount + " sub! Pogchamp")
-    } else {
-      sendMessage(this, channel, username, username + " gifted " + giftCount + " subs! Pogchamp")
-    }
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -220,11 +164,7 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog(announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
-  }
-
-  if (channel === "#theonemanny") {
-    sendMessage(this, channel, username, username + " sushiWOW " + sender)
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -313,7 +253,7 @@ function notificationParameter (message, data) {
   return message
 }
 
-function updateChatters () {
+async function updateChatters () {
   for (var channelKey in channels) {
     if (channels.hasOwnProperty(channelKey)) {
       let channelName = channelKey
@@ -335,7 +275,7 @@ function updateChatters () {
   }
 }
 
-function updateChannels () {
+async function updateChannels () {
 
   mysqlConnection.query(
     "SELECT * FROM channels LEFT JOIN notifications ON ID = channelID;",
@@ -382,7 +322,7 @@ function updateChannels () {
   )
 }
 
-function cleanupGlobalTimeout () {
+async function cleanupGlobalTimeout () {
   while (pastMessages.length > 0 && pastMessages[0] + 30000 < new Date().getTime()) {
     pastMessages.shift()
   }
