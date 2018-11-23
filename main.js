@@ -370,7 +370,7 @@ global.messageCallback = function (client, channel, userstate, returnMessage, re
   }
 
   if (!queueOverwrite) {
-    if (typeof userstate === "undefined") {
+    if (typeof userstate === "undefined" || !userstate) {
       userstate = {username: ""}
     }
     messageQueue.push({checked: false, isBeingChecked: false, allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: returnMessage}})
