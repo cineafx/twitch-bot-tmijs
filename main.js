@@ -149,7 +149,7 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
   }
 }
 
-function onSubmysterygift (channel, username, method, message, giftCount, senderCount, userstate) {
+function onSubmysterygift (channel, username, methods, message, giftCount, senderCount, userstate) {
   giftCount = parseInt(giftCount)
   senderCount = parseInt(senderCount)
 
@@ -322,7 +322,7 @@ async function updateChannels () {
         console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)
       }
     }
-    await (() => {return new Promise(resolve => setTimeout(resolve, 75))})()
+    await (() => { return new Promise(resolve => setTimeout(resolve, 75)) })()
   }
   return Promise.resolve(1)
 }
