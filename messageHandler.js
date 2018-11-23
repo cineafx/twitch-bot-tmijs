@@ -250,13 +250,6 @@ function splitInput (input) {
   return output
 }
 
-function pause (delay) {
-  var t0 = Date.now()
-  while ((Date.now() - t0) < delay) {
-    (function () {})()
-  }
-}
-
 async function batchSay (client, channel, messageArray) {
   if (queueOverwrite) {
     return false
