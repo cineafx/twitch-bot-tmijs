@@ -414,8 +414,10 @@ function updateMessageQueue (args) {
 function handleNewLine (client, channel, username, message) {
   if (nlRegEx.test(message)) {
     //TODO: handle VIP
-    let delay = !client.isMod(channel, client.getUsername()) ? 1250 : 0
+    let delay = !client.isMod(channel, client.getUsername()) && !isVIP(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
+
+    console.log(client.getUsername() + " " + delay)
 
     let regNls = message.match(nlRegEx)
     let regDelay = message.match(delayRegEx)
@@ -449,49 +451,49 @@ function handleNewLine (client, channel, username, message) {
 }
 
 function sendMessage (client, channel, username, message) {
+  let isSelfMessage = client.getUsername() === username
+  let isBotMOD = client.isMod(channel, client.getUsername())
+  let isBotVIP = isVIP(channel, client.getUsername())
 
-  var delay = (client.getUsername() === username && !client.isMod(channel, client.getUsername())) ? 1250 : 0
-
+  var delay = (isSelfMessage && !isBotMOD && !isBotVIP) ? 1250 : 0
   //Allows for better grouping if sending multi messages from both bots at the same time
   if (client === clientSelf) {
     delay += 50
   }
 
   setTimeout(function () {
-
     var currentTimeMillis = new Date().getTime()
-
     //more than 1250ms since last message
     //TODO: insert vip stuff in here:
-    if (lastMessageTime + 1225 < currentTimeMillis || client.isMod(channel, client.getUsername())) {
+    if (lastMessageTime + 1225 < currentTimeMillis || isBotMOD || isBotVIP) {
       lastMessageTime = currentTimeMillis
 
       //anti global ban
       cleanupGlobalTimeout()
       if (!checkGlobalTimeout()) {
         pastMessages.push(new Date().getTime())
-
         var shouldAdd = addSpecialCharacter[channel] || false
         if (shouldAdd) {
           message = message + " \u206D"
         }
         addSpecialCharacter[channel] = !shouldAdd
         client.say(channel, message)
-
       } else {
         console.log(timeStamp() + " ratelimit: 20 messages in past " + (currentTimeMillis - pastMessages[0]) + "ms")
       }
-
     } else {
       console.log(timeStamp() + " ratelimit: Too fast as pleb " + (currentTimeMillis - lastMessageTime) + "ms")
     }
-
   }, delay)
 }
 
 global.timeStamp = function () {
   var datetime = new Date().toISOString()
   return "[" + datetime.slice(0, 10) + " " + datetime.slice(-13, -5) + "]"
+}
+
+function isVIP (channel, username) {
+  return channels[channel].chatters.chatters.vips.includes(username)
 }
 
 function messageLog (client, channel, username, message, userLevel, shouldModerate) {
