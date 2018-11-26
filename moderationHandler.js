@@ -136,7 +136,7 @@ function modAction (client, channel, username, message, userLevel, banphraseData
 
     banphraseData.length = 1
 
-    if ([/*"EmojiSpam", "BrailleSpam"*/].includes(banphraseData.name)) {
+    if (["EmojiSpam", "BrailleSpam"].includes(banphraseData.name)) {
       client.timeout(channel, username, banphraseData.length, "Matched banphrase: " + banphraseData.name)
     }
 

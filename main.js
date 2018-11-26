@@ -122,7 +122,6 @@ function onSubscription (channel, username, methods, message, userstate) {
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog(announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
@@ -133,7 +132,6 @@ function onResub (channel, username, months, message, userstate, methods) {
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog(announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
@@ -144,7 +142,6 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog(announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
@@ -158,7 +155,6 @@ function onSubmysterygift (channel, username, methods, message, giftCount, sende
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog(announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
@@ -169,7 +165,6 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog(announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
@@ -188,20 +183,7 @@ function methodToMessage (channel, methods) {
   //{"prime":true,"plan":"Prime","planName":"Channel Subscription (forsenlol)"}
   //{"prime":false,"plan":"1000","planName":"Channel Subscription (forsenlol)"}
   //{"plan":"1000","planName":"Channel Subscription (forsenlol)"}
-
   let announcementMessage = ""
-
-  // TODO: detect resub / subgift / etc...
-  methods.type
-  "sub"
-  "resub"
-  "subGift"
-  "subMysteryGift"
-  "giftPaidUpgrade"
-
-
-
-
 
   if (methods.type === "sub" || methods.type === "resub") {
     let plans = ["Prime", "1000", "2000", "3000"]
@@ -413,7 +395,6 @@ function updateMessageQueue (args) {
 
 function handleNewLine (client, channel, username, message) {
   if (nlRegEx.test(message)) {
-    //TODO: handle VIP
     let delay = !client.isMod(channel, client.getUsername()) && !isVIP(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
 
@@ -464,7 +445,6 @@ function sendMessage (client, channel, username, message) {
   setTimeout(function () {
     var currentTimeMillis = new Date().getTime()
     //more than 1250ms since last message
-    //TODO: insert vip stuff in here:
     if (lastMessageTime + 1225 < currentTimeMillis || isBotMOD || isBotVIP) {
       lastMessageTime = currentTimeMillis
 
