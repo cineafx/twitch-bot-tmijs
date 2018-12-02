@@ -85,12 +85,6 @@ function onConnect (address, port) {
     firstConnect = false
 
     updateChannels().then(()=>{
-      /*if (options.clientoptions.dedicated.enabled) {
-        clientDedicated.say("#" + clientDedicated.getUsername(), "Successfully connected to " + clientDedicated.getChannels().length + " channels.")
-      }
-      if (options.clientoptions.self.enabled) {
-        clientSelf.say("#" + clientSelf.getUsername(), "Successfully connected to " + clientSelf.getChannels().length + " channels.")
-      }*/
       setInterval(updateChannels, 60000)
 
       messageHandler.updateCommandObjects()
