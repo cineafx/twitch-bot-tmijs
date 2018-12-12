@@ -149,7 +149,8 @@ function onSubmysterygift (channel, username, methods, message, giftCount, sende
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    messageCallback(this, channel, userstate, announcementMessage, "notifications")
+    customLog("SubMysteryGift: " + announcementMessage)
+    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
@@ -164,7 +165,10 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
 }
 
 function onElse (channel, message) {
-  customLog("Else: " + channel + ": " + JSON.stringify(message))
+  //filter out charity cheers
+  if (!message.contains("msg-id=charity;")) {
+    customLog("Else: " + channel + ": " + JSON.stringify(message))
+  }
 }
 
 /* -------------------------------------------------- */
@@ -212,7 +216,7 @@ function methodToMessage (channel, methods) {
 }
 
 function notificationParameter (message, data) {
-  customLog(JSON.stringify(data))
+  //customLog(JSON.stringify(data))
 
   let channel = data.channel.substring(1) || null
   let username = data.username || null
@@ -467,7 +471,11 @@ global.timeStamp = function () {
 }
 
 function isVIP (channel, username) {
-  return channels[channel].chatters.chatters.vips.includes(username)
+  if (channels[channel].hasOwnProperty('chatters') && channels[channel].chatters.hasOwnProperty('chatters')) {
+    return channels[channel].chatters.chatters.vips.includes(username)
+  } else {
+    return false
+  }
 }
 
 function messageLog (client, channel, username, message, userLevel, shouldModerate) {
