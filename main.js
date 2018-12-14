@@ -296,13 +296,13 @@ async function updateChannels () {
   //add
   for (channel of Object.keys(channels)) {
     channel = channels[channel]
-    if (options.clientoptions.dedicated.enabled) {
+    if (options.clientoptions.dedicated.enabled && channel.dedicated) {
       if (!clientDedicated.getChannels().includes(channel.channelName)) {
         clientDedicated.join(channel.channelName)
         console.log(timeStamp() + " " + clientDedicated.getUsername() + " JOINING: " + channel.channelName)
       }
     }
-    if (options.clientoptions.self.enabled) {
+    if (options.clientoptions.self.enabled && channel.self) {
       if (!clientSelf.getChannels().includes(channel.channelName)) {
         clientSelf.join(channel.channelName)
         console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)
