@@ -270,7 +270,7 @@ async function batchSay (client, channel, messageArray) {
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
       console.log("Ran " + i + "/" + messageArray.length + " lines.")
-      console.log("Took " + Math.floor((process.uptime() - startTime) * 1000) + " seconds so far.")
+      console.log("Took " + Math.floor(process.uptime() - startTime) + " seconds so far.")
       console.log("-----------------------------------------------------------")
       console.log("-----------------------------------------------------------")
       await new Promise(resolve => {
@@ -282,7 +282,7 @@ async function batchSay (client, channel, messageArray) {
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("Ran " + messageArray.length + " lines.")
-  console.log("Took " + Math.floor((process.uptime() - startTime) * 1000) + " seconds.")
+  console.log("Took " + Math.floor(process.uptime() - startTime) + " seconds.")
   console.log("-----------------------------------------------------------")
   console.log("-----------------------------------------------------------")
   console.log("Starting cooldown!")
