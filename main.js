@@ -140,11 +140,13 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
   }
 }
 
-function onSubmysterygift (channel, username, methods, message, giftCount, senderCount, userstate) {
-  giftCount = parseInt(giftCount)
+function onSubmysterygift (channel, username, methods, message, massGiftCount, senderCount, userstate) {
+  customLog("preparse: " + massGiftCount + " " + JSON.stringify(senderCount))
+  massGiftCount = parseInt(massGiftCount)
   senderCount = parseInt(senderCount)
+  customLog("postparse: " + massGiftCount + " " + senderCount)
 
-  let data = {channel: channel, username: username, giftCount: giftCount, senderCount: senderCount}
+  let data = {channel: channel, username: username, massGiftCount: massGiftCount, senderCount: senderCount}
   methods.type = "subMysteryGift"
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
@@ -222,7 +224,7 @@ function notificationParameter (message, data) {
   let username = data.username || null
   let secondUser = data.recipient || data.sender || null
   let months = data.months || 0
-  let giftCount = data.giftCount || 0
+  let massGiftCount = data.massGiftCount || 0
   let senderCount = data.senderCount || 0
   let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
   let extraS = months === 1 ? "" : "s"
@@ -231,7 +233,7 @@ function notificationParameter (message, data) {
   message = message.replace(new RegExp("\\${user}", 'g'), username)
   message = message.replace(new RegExp("\\${secondUser}", 'g'), secondUser)
   message = message.replace(new RegExp("\\${months}", 'g'), months)
-  message = message.replace(new RegExp("\\${giftCount}", 'g'), giftCount)
+  message = message.replace(new RegExp("\\${massGiftCount}", 'g'), massGiftCount)
   message = message.replace(new RegExp("\\${senderCount}", 'g'), senderCount)
   message = message.replace(new RegExp("\\${timeunit}", 'g'), timeunit)
   message = message.replace(new RegExp("\\${extraS}", 'g'), extraS)
@@ -274,29 +276,33 @@ async function updateChannels () {
   })
 
   //remove
-  clientDedicated.getChannels().forEach( function (element) {
-    if (!(Object.keys(channels).includes(element) && channels[element].dedicated)) {
-      clientDedicated.part(element)
-      console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
-    }
-  })
-  clientSelf.getChannels().forEach( function (element) {
-    if (!(Object.keys(channels).includes(element) && channels[element].self)) {
-      clientSelf.part(element)
-      console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
-    }
-  })
+  if (options.clientoptions.dedicated.enabled) {
+    clientDedicated.getChannels().forEach( function (element) {
+      if (!(Object.keys(channels).includes(element) && channels[element].dedicated)) {
+        clientDedicated.part(element)
+        console.log(timeStamp() + " " + clientDedicated.getUsername() + " LEAVING: " + element)
+      }
+    })
+  }
+  if (options.clientoptions.self.enabled) {
+    clientSelf.getChannels().forEach( function (element) {
+      if (!(Object.keys(channels).includes(element) && channels[element].self)) {
+        clientSelf.part(element)
+        console.log(timeStamp() + " " + clientSelf.getUsername() + " LEAVING: " + element)
+      }
+    })
+  }
 
   //add
   for (channel of Object.keys(channels)) {
     channel = channels[channel]
-    if (channel.dedicated) {
+    if (options.clientoptions.dedicated.enabled) {
       if (!clientDedicated.getChannels().includes(channel.channelName)) {
         clientDedicated.join(channel.channelName)
         console.log(timeStamp() + " " + clientDedicated.getUsername() + " JOINING: " + channel.channelName)
       }
     }
-    if (channel.self) {
+    if (options.clientoptions.self.enabled) {
       if (!clientSelf.getChannels().includes(channel.channelName)) {
         clientSelf.join(channel.channelName)
         console.log(timeStamp() + " " + clientSelf.getUsername() + " JOINING: " + channel.channelName)

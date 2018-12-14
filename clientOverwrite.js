@@ -560,7 +560,7 @@ function handleMessage(message) {
 
                     else if (msgid == 'submysterygift') {
                         var username = message.tags["display-name"] || message.tags["login"];
-                        var giftCount = message.tags["msg-param-mass-gift-count"];
+                        var massGiftCount = message.tags["msg-param-mass-gift-count"];
                         var senderCount = message.tags["msg-param-sender-count"];
                         var plan = message.tags["msg-param-sub-plan"];
                         var planName = _.replaceAll(_.get(message.tags["msg-param-sub-plan-name"], null), {
@@ -574,7 +574,7 @@ function handleMessage(message) {
                          if (userstate) {
                             userstate['message-type'] = 'subgift';
                         }
-                         this.emit("submysterygift", channel, username, {plan, planName}, giftCount, senderCount, userstate);
+                         this.emit("submysterygift", channel, username, {plan, planName}, massGiftCount, senderCount, userstate);
                     }
 
                     else if (msgid == 'giftpaidupgrade') {
