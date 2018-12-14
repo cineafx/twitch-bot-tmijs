@@ -141,7 +141,7 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
 }
 
 function onSubmysterygift (channel, username, methods, message, massGiftCount, senderCount, userstate) {
-  customLog("preparse: " + massGiftCount + " " + JSON.stringify(senderCount))
+  customLog("preparse: " + massGiftCount + " " + typeOf(senderCount))
   massGiftCount = parseInt(massGiftCount)
   senderCount = parseInt(senderCount)
   customLog("postparse: " + massGiftCount + " " + senderCount)
@@ -158,7 +158,7 @@ function onSubmysterygift (channel, username, methods, message, massGiftCount, s
 
 function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
   let data = {channel: channel, username: username, sender: sender}
-  methods.type = "giftPaidUpgrade"
+  let methods = {type: "giftPaidUpgrade"}
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
