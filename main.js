@@ -168,7 +168,7 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
 
 function onElse (channel, message) {
   //filter out charity cheers
-  if (!message.includes("msg-id=charity;")) {
+  if (!JSON.stringify(message).includes("msg-id=charity;")) {
     customLog("Else: " + channel + ": " + JSON.stringify(message))
   }
 }
