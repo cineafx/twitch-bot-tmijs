@@ -140,11 +140,9 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
   }
 }
 
-function onSubmysterygift (channel, username, methods, message, massGiftCount, senderCount, userstate) {
-  customLog("preparse: " + massGiftCount + " " + typeOf(senderCount))
+function onSubmysterygift (channel, username, methods, massGiftCount, senderCount, userstate) {
   massGiftCount = parseInt(massGiftCount)
   senderCount = parseInt(senderCount)
-  customLog("postparse: " + massGiftCount + " " + senderCount)
 
   let data = {channel: channel, username: username, massGiftCount: massGiftCount, senderCount: senderCount}
   methods.type = "subMysteryGift"
@@ -152,7 +150,7 @@ function onSubmysterygift (channel, username, methods, message, massGiftCount, s
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
     customLog("SubMysteryGift: " + announcementMessage)
-    //messageCallback(this, channel, userstate, announcementMessage, "notifications")
+    messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
 
