@@ -149,7 +149,6 @@ function onSubmysterygift (channel, username, methods, massGiftCount, senderCoun
   let announcementMessage = methodToMessage(channel, methods)
   if (announcementMessage) {
     announcementMessage = notificationParameter(announcementMessage, data)
-    customLog("SubMysteryGift: " + announcementMessage)
     messageCallback(this, channel, userstate, announcementMessage, "notifications")
   }
 }
