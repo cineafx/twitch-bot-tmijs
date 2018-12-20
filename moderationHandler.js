@@ -32,7 +32,7 @@ function handle (client, channel, userstate, message, userLevel) {
   if (cyrillicPattern.test(message)) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "Cyrillic letters",	"phrase": message.match(cyrillicPattern)[0]})
   }
-
+  /*
   if (nWordReg.test(message)) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "Nword",	"phrase": message.match(nWordReg)[0]})
   }
@@ -40,6 +40,7 @@ function handle (client, channel, userstate, message, userLevel) {
   if (nWordReg2.test(message)) {
     modAction(client, channel, userstate.username, message, userLevel, {"permanent": false, "length": 1, "name": "Nword",	"phrase": message.match(nWordReg2)[0]})
   }
+  */
   //forsenApi(message, {callback: forsenApiCallback, args: {allow: false, messageObj: {client: client, channel: channel, username: userstate.username, message: message, userLevel: userLevel}}}, false)
 
 }
