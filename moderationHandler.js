@@ -9,7 +9,8 @@ const request = require('request')
 
 module.exports = {
   handle: handle,
-  forsenApi: forsenApi
+  forsenApi: forsenApi,
+  containsNword: containsNword
 }
 
 function handle (client, channel, userstate, message, userLevel) {
@@ -119,6 +120,10 @@ function forsenApi (message, callbackMetaData, logIfBanned) {
     }
     callbackMetaData.callback(callbackMetaData.args)
   })
+}
+
+function containsNword (message) {
+  return nWordReg.test(message) || nWordReg2.test(message)
 }
 
 function modAction (client, channel, username, message, userLevel, banphraseData) {

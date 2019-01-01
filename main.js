@@ -164,8 +164,8 @@ function onGiftpaidupgrade (channel, username, sender, promo, userstate) {
 }
 
 function onElse (channel, message) {
-  //filter out charity cheers
-  if (!JSON.stringify(message).includes("msg-id=charity;")) {
+  //filter out raids
+  if (!JSON.stringify(message).includes("msg-id=raid;")) {
     customLog("Else: " + channel + ": " + JSON.stringify(message))
   }
 }
@@ -376,7 +376,13 @@ queueEmitter.on('event', function () {
       } else if (!messageQueue[0].isBeingChecked) {
         messageQueue[0].isBeingChecked = true
 
+        messageQueue[0].allow = !moderationHandler.containsNword(messageQueue[0].messageObj.message)
+        messageQueue[0].checked = true
+        updateMessageQueue(messageQueue[0])
+        messageQueue[0].isBeingChecked = false
+        /*
         moderationHandler.forsenApi(messageQueue[0].messageObj.message, {callback: updateMessageQueue, args: messageQueue[0]}, true)
+        */
       }
     }
   })
