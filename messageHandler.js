@@ -75,9 +75,15 @@ function handle (client, channel, userstate, message, userLevel) {
         let inputReg = searchTerm.match(nukeRegIsReg)
         if (inputReg && inputReg.length > 0) {
           searchTerm = inputReg[1]
+        } else {
+          searchTerm = searchTerm.replace(/[|\\{}()[\]^$+*?.]/g, '\\\$&')
         }
-        searchTerm = new RegExp(searchTerm, "gi")
-
+        try {
+          searchTerm = new RegExp(searchTerm, "gi")
+        } catch(e) {
+          messageCallback(client, channel, userstate, "@" + userstate.username +", " + e, "error")
+          return
+        }
         mysqlConnection.query(
           "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
           [channels[channel].ID, searchTime],
