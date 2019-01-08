@@ -100,6 +100,11 @@ function onConnect (address, port) {
 }
 
 function onChat (channel, userstate, message, self) {
+  if (channel === "#skynetcentral") {
+    customLog("SkynetCentral: " + message)
+    return
+  }
+
   let userLevel = getUserLevel(channel, userstate)
   if (channels[channel.toLowerCase()].shouldModerate) {
     moderationHandler.handle(this, channel, userstate, message, userLevel)
@@ -141,8 +146,6 @@ function onSubgift (channel, username, recipient, methods, message, userstate) {
 }
 
 function onSubmysterygift (channel, username, methods, massGiftCount, senderCount, userstate) {
-  massGiftCount = parseInt(massGiftCount)
-  senderCount = parseInt(senderCount)
 
   let data = {channel: channel, username: username, massGiftCount: massGiftCount, senderCount: senderCount}
   methods.type = "subMysteryGift"
@@ -316,8 +319,14 @@ async function cleanupGlobalTimeout () {
   }
 }
 
-function checkGlobalTimeout () {
-  if (pastMessages.length < 20) {
+function checkGlobalTimeout (client, higherRate) {
+  let plebRatelimit = 20
+  let modRatelimit = 100
+  //stupid hardcode ... bot 2.0 is going to be there at some point *TODO*
+  if (client.getUsername().toLowerCase() === "icecreamdatabase") {
+    modRatelimit = 7500
+  }
+  if (pastMessages.length < (higherRate ? modRatelimit : plebRatelimit)) {
     console.log(pastMessages.length + " message(s) in the past 30 seconds")
 
     return false
@@ -402,7 +411,7 @@ function updateMessageQueue (args) {
 
 function handleNewLine (client, channel, username, message) {
   if (nlRegEx.test(message)) {
-    let delay = !client.isMod(channel, client.getUsername()) && !isVIP(channel, client.getUsername()) ? 1250 : 0
+    let delay = !isMOD(client, channel, client.getUsername()) && !isVIP(channel, client.getUsername()) ? 1250 : 0
     let currentDelay = 0
 
     console.log(client.getUsername() + " " + delay)
@@ -440,7 +449,7 @@ function handleNewLine (client, channel, username, message) {
 
 function sendMessage (client, channel, username, message) {
   let isSelfMessage = client.getUsername() === username
-  let isBotMOD = client.isMod(channel, client.getUsername())
+  let isBotMOD = isMOD(client, channel, client.getUsername())
   let isBotVIP = isVIP(channel, client.getUsername())
 
   var delay = (isSelfMessage && !isBotMOD && !isBotVIP) ? 1250 : 0
@@ -457,7 +466,7 @@ function sendMessage (client, channel, username, message) {
 
       //anti global ban
       cleanupGlobalTimeout()
-      if (!checkGlobalTimeout()) {
+      if (!checkGlobalTimeout(client, isBotMOD || isBotVIP)) {
         pastMessages.push(new Date().getTime())
         var shouldAdd = addSpecialCharacter[channel] || false
         if (shouldAdd) {
@@ -485,6 +494,10 @@ function isVIP (channel, username) {
   } else {
     return false
   }
+}
+
+function isMOD (client, channel, username) {
+  return client.isMod(channel, username) || "#" + username.toLowerCase() === channel.toLowerCase()
 }
 
 function messageLog (client, channel, username, message, userLevel, shouldModerate) {
