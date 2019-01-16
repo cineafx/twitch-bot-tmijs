@@ -224,8 +224,8 @@ function notificationParameter (message, data) {
   let username = data.username || null
   let secondUser = data.recipient || data.sender || null
   let months = data.months || 0
-  let massGiftCount = data.massGiftCount || 0
-  let senderCount = data.senderCount || 0
+  let massGiftCount = parseInt(data.massGiftCount) || 0
+  let senderCount = parseInt(data.senderCount) || 0
   let timeunit = timeunits[Math.floor(Math.random() * timeunits.length)]
   let extraS = months === 1 ? "" : "s"
 
