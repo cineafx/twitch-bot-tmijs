@@ -327,7 +327,7 @@ function checkGlobalTimeout (client, higherRate) {
     modRatelimit = 7500
   }
   if (pastMessages.length < (higherRate ? modRatelimit : plebRatelimit)) {
-    console.log(pastMessages.length + " message(s) in the past 30 seconds")
+    console.log(pastMessages.length + " message(s) in the past 30 seconds (Current limit: " + (higherRate ? modRatelimit : plebRatelimit) + ")")
 
     return false
   } else {
@@ -497,6 +497,9 @@ function isVIP (channel, username) {
 }
 
 function isMOD (client, channel, username) {
+  if (channel.toLowerCase() === "#theonemanny") {
+    return false
+  }
   return client.isMod(channel, username) || "#" + username.toLowerCase() === channel.toLowerCase()
 }
 
@@ -504,12 +507,12 @@ function messageLog (client, channel, username, message, userLevel, shouldModera
 
   if (shouldModerate) {
     mysqlConnection.execute(
-      "INSERT INTO `IceCreamDataBase`.`messageLog` (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
+      "INSERT INTO messageLog (`clientUsername`, `channelID`, `username`, `message`, `userLevel`) VALUES (?, ?, ?, ?, ?);",
       [client.getUsername(), channels[channel].ID, username, message, userLevel]
     )
 
     mysqlConnection.execute(
-      "DELETE FROM IceCreamDataBase.messageLog WHERE TIMESTAMPDIFF(MINUTE,`timestamp`,CURRENT_TIMESTAMP()) > 60;"
+      "DELETE FROM messageLog WHERE TIMESTAMPDIFF(MINUTE,`timestamp`,CURRENT_TIMESTAMP()) > 60;"
     )
   }
 
