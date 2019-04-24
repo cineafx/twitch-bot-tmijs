@@ -85,7 +85,7 @@ function handle (client, channel, userstate, message, userLevel) {
           return
         }
         mysqlConnection.query(
-          "SELECT username, message, userLevel FROM IceCreamDataBase.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
+          "SELECT username, message, userLevel FROM IceCreamDataBaseOld.messageLog WHERE channelID = ? AND TIMESTAMPDIFF(SECOND,`timestamp`,CURRENT_TIMESTAMP()) < ?",
           [channels[channel].ID, searchTime],
           function (err, results, fields) {
             let messageArray = []

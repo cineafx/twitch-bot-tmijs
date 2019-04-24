@@ -107,7 +107,7 @@ function onChat (channel, userstate, message, self) {
 
   let userLevel = getUserLevel(channel, userstate)
   if (channels[channel.toLowerCase()].shouldModerate) {
-    moderationHandler.handle(this, channel, userstate, message, userLevel)
+    //moderationHandler.handle(this, channel, userstate, message, userLevel)
   }
 
   if (!channels[channel.toLowerCase()].useCommands) { return }
@@ -470,7 +470,7 @@ function sendMessage (client, channel, username, message) {
         pastMessages.push(new Date().getTime())
         var shouldAdd = addSpecialCharacter[channel] || false
         if (shouldAdd) {
-          message = message + " \u206D"
+          message = message + " \u2800"
         }
         addSpecialCharacter[channel] = !shouldAdd
         client.say(channel, message)
@@ -497,10 +497,11 @@ function isVIP (channel, username) {
 }
 
 function isMOD (client, channel, username) {
-  if (channel.toLowerCase() === "#theonemanny") {
+  if (channels[channel].hasOwnProperty('chatters') && channels[channel].chatters.hasOwnProperty('chatters')) {
+    return channels[channel].chatters.chatters.moderators.includes(username)
+  } else {
     return false
   }
-  return client.isMod(channel, username) || "#" + username.toLowerCase() === channel.toLowerCase()
 }
 
 function messageLog (client, channel, username, message, userLevel, shouldModerate) {
